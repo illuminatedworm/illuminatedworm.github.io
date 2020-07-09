@@ -6,14 +6,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="Object转List时出现Unchecked cast警告的解决办法问题123456789public static void main(String[] args) &amp;#123;    try &amp;#123;        ObjectInput objectInput &#x3D; new ObjectInputStream(new FileInputStream(&quot;&#x2F;student.dat&quot;));&#x2F;&#x2F;">
+    <meta name="description" content="问题123456789public static void main(String[] args) &amp;#123;    try &amp;#123;        ObjectInput objectInput &#x3D; new ObjectInputStream(new FileInputStream(&quot;&#x2F;student.dat&quot;));&#x2F;&#x2F;student.dat中存储了一个List&lt;Student&amp;gt">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Object转List时出现Unchecked cast警告的解决办法">
 <meta property="og:url" content="http://yoursite.com/2020/07/09/Object%E8%BD%ACList%E6%97%B6%E5%87%BA%E7%8E%B0Unchecked-cast%E8%AD%A6%E5%91%8A%E7%9A%84%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95/index.html">
 <meta property="og:site_name" content="OblevdorOhmsic&#39;s Blog">
-<meta property="og:description" content="Object转List时出现Unchecked cast警告的解决办法问题123456789public static void main(String[] args) &amp;#123;    try &amp;#123;        ObjectInput objectInput &#x3D; new ObjectInputStream(new FileInputStream(&quot;&#x2F;student.dat&quot;));&#x2F;&#x2F;">
+<meta property="og:description" content="问题123456789public static void main(String[] args) &amp;#123;    try &amp;#123;        ObjectInput objectInput &#x3D; new ObjectInputStream(new FileInputStream(&quot;&#x2F;student.dat&quot;));&#x2F;&#x2F;student.dat中存储了一个List&lt;Student&amp;gt">
 <meta property="article:published_time" content="2020-07-09T15:28:39.000Z">
-<meta property="article:modified_time" content="2020-07-09T15:30:03.133Z">
+<meta property="article:modified_time" content="2020-07-09T15:40:18.472Z">
 <meta property="article:author" content="OblevdorOhmsic">
 <meta name="twitter:card" content="summary">
     
@@ -102,7 +102,7 @@
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Object转List时出现Unchecked-cast警告的解决办法"><span class="toc-number">1.</span> <span class="toc-text">Object转List时出现Unchecked cast警告的解决办法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">1.1.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#尝试"><span class="toc-number">1.2.</span> <span class="toc-text">尝试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正确处理"><span class="toc-number">1.3.</span> <span class="toc-text">正确处理</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">1.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#尝试"><span class="toc-number">2.</span> <span class="toc-text">尝试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正确处理"><span class="toc-number">3.</span> <span class="toc-text">正确处理</span></a></li></ol>
     </div>
   </span>
 </div>
@@ -141,7 +141,7 @@
   
 
   <div class="content" itemprop="articleBody">
-    <h1 id="Object转List时出现Unchecked-cast警告的解决办法"><a href="#Object转List时出现Unchecked-cast警告的解决办法" class="headerlink" title="Object转List时出现Unchecked cast警告的解决办法"></a>Object转List时出现Unchecked cast警告的解决办法</h1><h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ObjectInput objectInput = <span class="keyword">new</span> ObjectInputStream(<span class="keyword">new</span> FileInputStream(<span class="string">"/student.dat"</span>));<span class="comment">//student.dat中存储了一个List&lt;Student&gt;对象。</span></span><br><span class="line">        List&lt;Student&gt; tempList = (ArrayList&lt;Student&gt;)objectInput.readObject();</span><br><span class="line">        tempList.forEach(Student::show);<span class="comment">//遍历List中Student并执行此类中的show方法。</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException | ClassNotFoundException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ObjectInput objectInput = <span class="keyword">new</span> ObjectInputStream(<span class="keyword">new</span> FileInputStream(<span class="string">"/student.dat"</span>));<span class="comment">//student.dat中存储了一个List&lt;Student&gt;对象。</span></span><br><span class="line">        List&lt;Student&gt; tempList = (ArrayList&lt;Student&gt;)objectInput.readObject();</span><br><span class="line">        tempList.forEach(Student::show);<span class="comment">//遍历List中Student并执行此类中的show方法。</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException | ClassNotFoundException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 
@@ -174,7 +174,7 @@
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Object转List时出现Unchecked-cast警告的解决办法"><span class="toc-number">1.</span> <span class="toc-text">Object转List时出现Unchecked cast警告的解决办法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">1.1.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#尝试"><span class="toc-number">1.2.</span> <span class="toc-text">尝试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正确处理"><span class="toc-number">1.3.</span> <span class="toc-text">正确处理</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">1.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#尝试"><span class="toc-number">2.</span> <span class="toc-text">尝试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正确处理"><span class="toc-number">3.</span> <span class="toc-text">正确处理</span></a></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">
