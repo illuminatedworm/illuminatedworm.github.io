@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
 <meta property="og:description" content="PECS  PECS 即 Producer Extends Consumer Super，是对使用了限定通配符作为类型参数的数据结构具有的一些现象的提炼总结，便于记忆。在网络上已经有许多或详或略的介绍，它们大多都解释了以下几点：  对于具有? extends SuperClass泛型的数据结构：   不能向其中存入SuperClass或者SuperClass的子类的对象。实际上，不能向当中存入任何">
 <meta property="article:published_time" content="2020-07-21T15:23:09.000Z">
-<meta property="article:modified_time" content="2020-07-21T16:28:59.102Z">
+<meta property="article:modified_time" content="2020-07-22T05:58:02.551Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta name="twitter:card" content="summary">
     
@@ -167,7 +167,7 @@
 <p>  既然<code>? extends SuperClass</code>和<code>? super SubClass</code>都指代一些存在关系的对象，同样都是不具备约束的<code>?</code>通配符，为何就会有 Producer 和 Consumer 的现象呢？实在是令人费解。</p>
 <h2 id="猜测"><a href="#猜测" class="headerlink" title="猜测"></a>猜测</h2><p>  以下是未经任何证实的个人猜测：</p>
 <p>  重点在于，子类继承超类所有的成员变量和方法，一个类可以扩展一个父类且实现多个接口，更能自己新增成员变量和方法。这意味着子类一定具有不少于超类的信息，反过来说，超类的信息一定小于或等于子类。</p>
-<p>  之所以<code>? extends SuperClass</code>不能存入<code>SuperClass</code>或者<code>SuperClass</code>的子类的对象，首先如《Java核心技术 1卷》所说，因为<code>?</code>并不匹配，原则上究竟存入什么对象是不可预测的，而Java设计者不想为了<code>SuperClass</code>开特例，因此连<code>SuperClass</code>对象也不被接受，其次因为这样给定的上界限只保证了最小信息量，向其中存入<code>SuperClass</code>的子类的对象存在信息溢出的风险。最后，不能插入其他任何类也说得通了，因为信息根本就不能保证匹配。</p>
+<p>  之所以<code>? extends SuperClass</code>不能存入<code>SuperClass</code>或者<code>SuperClass</code>的子类的对象，首先如《Java核心技术 1卷》所说，因为<code>?</code>并不匹配，原则上究竟存入什么对象是不可预测的，而Java设计者不想为了<code>SuperClass</code>开特例——毕竟想要存入<code>SuperClass</code>大可使用<code>&lt;SuperClass&gt;</code>，所以连<code>SuperClass</code>对象也不被接受，其次这样给定的上界限只保证了最小信息量，向其中存入<code>SuperClass</code>的子类的对象存在信息溢出的风险。最后，不能插入其他任何类也说得通了，那些类的信息根本就不能保证匹配。</p>
 <p>  而<code>? super SubClass</code>这样给定的下界限保证了最大信息量，即使<code>?</code>不匹配，因得这一系列对象的存入完全没有风险，所以存入是可以接受的。</p>
 
   </div>
