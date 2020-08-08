@@ -15,7 +15,7 @@
 <meta property="og:description" content="分析  原本的字段类型可能有多种，需要区别处理。     卫语句结构如上图，处理方式：  字段为null或类型被static修饰时，略过此字段。 字段类型为字面量，字面量包装器，枚举和单例时，直接将此字段赋予副本。 对其他对象递归调用深拷贝方法。  同时满足以下两条件的类认为是单例：  所有构造器都为private修饰。  有一个为static修饰且类型与本类相同的字段。   代码与测试  工具类">
 <meta property="og:image" content="http://yoursite.com/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/1.png">
 <meta property="article:published_time" content="2020-07-29T06:30:01.000Z">
-<meta property="article:modified_time" content="2020-08-05T15:22:42.735Z">
+<meta property="article:modified_time" content="2020-08-08T14:29:56.438Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary">
@@ -122,14 +122,14 @@
 <h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">thisOne:Person(name=张三, age=<span class="number">30</span>, height=<span class="number">185.3</span>, weight=<span class="number">60.1</span>, balance=<span class="number">1891487.15</span>, car=Car(name=卡车, ID=<span class="number">9849</span>, license=CarLicense(firstName=A, num=AS56IO98, color=BLUE, status=<span class="keyword">true</span>)), something=SomeThingSingleton(dNum=<span class="number">12.12</span>))</span><br><span class="line">copyOne:Person(name=张三, age=<span class="number">30</span>, height=<span class="number">185.3</span>, weight=<span class="number">60.1</span>, balance=<span class="number">1891487.15</span>, car=Car(name=卡车, ID=<span class="number">9849</span>, license=CarLicense(firstName=A, num=AS56IO98, color=BLUE, status=<span class="keyword">true</span>)), something=SomeThingSingleton(dNum=<span class="number">12.12</span>))</span><br><span class="line">copyOne == thisOne :<span class="keyword">false</span></span><br><span class="line">---经由Lombok重写的equals方法---</span><br><span class="line">copy.equals(thisOne) :<span class="keyword">true</span></span><br></pre></td></tr></table></figure>
 
 <p>  基本达成需求。</p>
-<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>  实际情况中采用这种方式并不好，需要深拷贝时继承cloneable接口，或直接视乎具体情况新建对象即可。采用反射的方式虽然有通用性，然而反射效率不高，前文两法也便利，这个工具类还是不用为妙。</p>
-<p>  另外用序列化实现深拷贝更不可取，序列化底层同样使用反射实现，并且有大量其他工作。效率与此工具类有数量级差距。</p>
-<p>  <strong>另外，本例中用于判断单例的逻辑也许有误处理的风险。毕竟根本上讲，单例是语义现象，而不是语法规定。</strong></p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>  实际情况中采用这种方式并不好，需要深拷贝时继承cloneable接口，或直接视乎具体情况新建对象即可。采用反射的方式虽然有通用性，然而反射效率不高，上另两法也便利，这个工具类还是不用为妙。</p>
+<p>  另外用序列化实现深拷贝<strong>更不可取</strong>，序列化底层同样使用反射实现，并且有大量其他工作。效率与此工具类有数量级差距。</p>
+<p>  <strong>另外，本例中用于判断单例的逻辑很可能有误处理的风险。毕竟根本上讲，单例是语义现象，而不是语法规定。</strong></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/" data-id="ckdkh181s0009poul3bid5207" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/" data-id="ckdlrasnb0005w0ul1f99bkdw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
