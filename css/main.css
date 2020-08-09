@@ -2790,3 +2790,6 @@ mjx-container[display="true"] + br {
     margin: 8px 0 0;
   }
 }
+.post-body p {
+  text-indent: 2em;
+}
