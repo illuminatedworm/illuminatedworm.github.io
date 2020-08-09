@@ -2793,3 +2793,6 @@ mjx-container[display="true"] + br {
 .post-body p {
   text-indent: 2em;
 }
+.post-body li p {
+  text-indent: 0em;
+}
