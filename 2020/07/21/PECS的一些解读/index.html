@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
 
   
@@ -28,10 +28,10 @@
   
 <link rel="stylesheet" href="/css/style.css">
 
-<meta name="generator" content="Hexo 4.2.0"></head>
+<meta name="generator" content="Hexo 4.2.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
-  <div id="container">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
     <div id="wrap">
       <header id="header">
   <div id="banner"></div>
@@ -108,7 +108,7 @@
 </blockquote>
 <p>  这样行文似乎意指<code>?</code>不像<code>T</code>一样具有约束是重点，然而在后文谈及具有<code>? super SubClass</code>泛型的数据结构为何就能接受那些对象了呢……？实际上《Java核心技术 1卷》就没有作出相关解释。那么一个显而易见的问题出现了：</p>
 <p>  既然<code>? extends SuperClass</code>和<code>? super SubClass</code>都指代一些存在关系的对象，同样都是不具备约束的<code>?</code>通配符，为何就会有 Producer 和 Consumer 的现象呢？实在是令人费解。</p>
-<h2 id="猜测"><a href="#猜测" class="headerlink" title="猜测"></a>猜测</h2><p>  <strong>*<u>以下是未经任何证实的个人猜测：</u>*</strong></p>
+<h2 id="猜测"><a href="#猜测" class="headerlink" title="猜测"></a>猜测</h2><p>  <strong><em><u>以下是未经任何证实的个人猜测：</u></em></strong></p>
 <p>  重点在于，子类继承超类所有的成员变量和方法，一个类可以扩展一个父类且实现多个接口，更能自己新增成员变量和方法。这意味着子类一定具有不少于超类的信息，反过来说，超类的信息一定小于或等于子类。</p>
 <p>  之所以<code>? extends SuperClass</code>不能存入<code>SuperClass</code>或者<code>SuperClass</code>的子类的对象，首先如《Java核心技术 1卷》所说，因为<code>?</code>并不匹配，原则上究竟存入什么对象是不可预测的，而Java设计者不想为了<code>SuperClass</code>开特例——毕竟想要存入<code>SuperClass</code>大可使用<code>&lt;SuperClass&gt;</code>，所以连<code>SuperClass</code>对象也不被接受，其次这样给定的上界限只保证了最小信息量，向其中存入<code>SuperClass</code>的子类的对象存在信息溢出的风险。最后，不能插入其他任何类也说得通了，那些类的信息根本就不能保证匹配。</p>
 <p>  而<code>? super SubClass</code>这样给定的下界限保证了最大信息量，即使<code>?</code>不匹配，因得这一系列对象的存入完全没有风险，所以存入是可以接受的。</p>
@@ -116,7 +116,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/" data-id="ckdlrasn90004w0ulfad554hr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/" data-id="ckdmyfulp0004kwulhqlj3g7j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
@@ -253,6 +253,6 @@
 
 
 
-  </div>
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

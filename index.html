@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
 
   
@@ -23,10 +23,10 @@
   
 <link rel="stylesheet" href="/css/style.css">
 
-<meta name="generator" content="Hexo 4.2.0"></head>
+<meta name="generator" content="Hexo 4.2.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
-  <div id="container">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
     <div id="wrap">
       <header id="header">
   <div id="banner"></div>
@@ -81,62 +81,71 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="正负和原码之难"><a href="#正负和原码之难" class="headerlink" title="正负和原码之难"></a>正负和原码之难</h2><p>  在计算机中区分正负数有许多好处，此时可以只考虑一个，不用特别设计和实现减法，将减法转换为加法即可：<br>$$<br>5-3=5+(-3)<br>$$<br>  下表展示了3位数中的应用实例。</p>
+        <h2 id="正负和原码之难"><a href="#正负和原码之难" class="headerlink" title="正负和原码之难"></a>正负和原码之难</h2><p>  在计算机中区分正负数有许多好处，此时可以只考虑一个，不用特别设计和实现减法，将减法转换为加法即可：</p>
+<script type="math/tex; mode=display">
+5-3=5+(-3)</script><p>  下表展示了3位数中的应用实例。</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="center">十进制表示</th>
-<th align="center">原码</th>
-<th align="center">补码</th>
+<th style="text-align:center">十进制表示</th>
+<th style="text-align:center">原码</th>
+<th style="text-align:center">补码</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">0</td>
-<td align="center">000</td>
-<td align="center">000</td>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">000</td>
+<td style="text-align:center">000</td>
 </tr>
 <tr>
-<td align="center">1</td>
-<td align="center">001</td>
-<td align="center">001</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">001</td>
+<td style="text-align:center">001</td>
 </tr>
 <tr>
-<td align="center">2</td>
-<td align="center">010</td>
-<td align="center">010</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">010</td>
+<td style="text-align:center">010</td>
 </tr>
 <tr>
-<td align="center">3</td>
-<td align="center">011</td>
-<td align="center">011</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">011</td>
+<td style="text-align:center">011</td>
 </tr>
 <tr>
-<td align="center">-4</td>
-<td align="center">N/A*****</td>
-<td align="center">100</td>
+<td style="text-align:center">-4</td>
+<td style="text-align:center">N/A<strong>*</strong></td>
+<td style="text-align:center">100</td>
 </tr>
 <tr>
-<td align="center">-3</td>
-<td align="center">111</td>
-<td align="center">101</td>
+<td style="text-align:center">-3</td>
+<td style="text-align:center">111</td>
+<td style="text-align:center">101</td>
 </tr>
 <tr>
-<td align="center">-2</td>
-<td align="center">110</td>
-<td align="center">110</td>
+<td style="text-align:center">-2</td>
+<td style="text-align:center">110</td>
+<td style="text-align:center">110</td>
 </tr>
 <tr>
-<td align="center">-1</td>
-<td align="center">101</td>
-<td align="center">111</td>
+<td style="text-align:center">-1</td>
+<td style="text-align:center">101</td>
+<td style="text-align:center">111</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>  就像为了标明数的正负而在开头添加＋或－一样，用二进制数的第一位表示正负和剩余位数表示值是理所当然的做法。原码第一位作为符号位，0表示负，1则表示正，剩余位数就是原数绝对值的二进制表示。</p>
-<p>  数被表示好了，并且能区分正负，接下来当然要进行运算，那么问题出现了：<br>$$<br>3+(-3)=0\neq010=011+111<br>$$<br>  那么该将如何呢？让计算机去根据符号位进行判断大概是最直观的解决，这当然没错。然而需要注意的是，加法在计算机中已经是非常基础的运算，它理应尽可能地简单，否则将严重拖累计算机的性能，之前提到的把减法视作加法也基于这样的原则。带上新条件重新思考，那么摆在脚下的路仍然是让符号位也参与加法运算，所以原码这样的方法是行不通了。</p>
+<p>  数被表示好了，并且能区分正负，接下来当然要进行运算，那么问题出现了：</p>
+<script type="math/tex; mode=display">
+3+(-3)=0\neq010=011+111</script><p>  那么该将如何呢？让计算机去根据符号位进行判断大概是最直观的解决，这当然没错。然而需要注意的是，加法在计算机中已经是非常基础的运算，它理应尽可能地简单，否则将严重拖累计算机的性能，之前提到的把减法视作加法也基于这样的原则。带上新条件重新思考，那么摆在脚下的路仍然是让符号位也参与加法运算，所以原码这样的方法是行不通了。</p>
 <h2 id="冯·诺依曼小剧场"><a href="#冯·诺依曼小剧场" class="headerlink" title="冯·诺依曼小剧场"></a>冯·诺依曼小剧场</h2><p>  首先重新看回上面的原码运算，<strong>请特别注意在有限的3位数中011+111的结果并不是1010，计算机“丢弃”了超越的进位！进位而位不足便添位在人的认识中是非常自然的，但对于计算机并非如此。这个容易略过的事实十分重要。</strong></p>
 <hr>
 <p>  现在请考虑：你是一个认得0~9的十进制思想的人，你只能做加法，你有且只有一位数，不得添也不得去，9+1的结果对于你来说是多少？暂时跳出这个奇怪的身份，当然会知道9+1=10，但此时的你并不能添位，因此10里的1就这么“溢出”了，你丢掉了这个数字，以仅剩下的0作为结果。在有限位数的计算中，一直持续加下去，并不会得到＋∞，而是在有限位数的有限表示中循环：0, 1, 2… 8, 9, 0, 1, 2…</p>
 <p>  请再考虑：虽然你只能做加法，却有人需要你做减法，现在轮到这位强人所难的家伙头疼了，他知道不能让你进行8-3这样的运算，既然只能做加法那就做加法，那么8加上什么数才可以呢。他也想起了上面提到的循环，于是他知道了，让你计算8+7的结果便能得到和8-3相同的结果。他决定做一张对照表，把某些类似+7和-3这样成对关联的数对应起来，方便查询。依样画葫芦，他得到了这样一张表：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -153,7 +162,8 @@
 <th>-1</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>你：</td>
 <td>0</td>
 <td>1</td>
@@ -166,31 +176,34 @@
 <td>8</td>
 <td>9</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>  他进一步想到，万一你以后可以支持更多位和更多表示了呢，又重新来一遍不成？要找出这种映射的规律，细细一看，并不难发现：</p>
 <p>  -5+10=5，-4+6=10，-3+10=7……</p>
 <p>  原来如此，原值和映射值之和等于10。为什么是10呢，他稍微对更高表示量的情况作了验证，确实这个和就是适逢进位溢出的那个数。</p>
 <h2 id="补码，重整乾坤"><a href="#补码，重整乾坤" class="headerlink" title="补码，重整乾坤"></a>补码，重整乾坤</h2><p>  补码，就是一种在计算机中用二进制数表示有正负符号的数的方法。用这种方法处理整数时，正数的补码为其原码，而负数的补码与原码之和为2<sup>N</sup>。 对于二进制数，N位数适逢进位溢出的数就是2<sup>N</sup>。</p>
 <p>  约翰·冯·诺依曼当然不会组织这样的小剧场，他倒确实是补码的提案者，而补码的用意就和小剧场里的映射表一样，要将一系列循环表示的前半部分当作正数，后半部分当作负数，这样便同时解决了表示正负，以加代减和令加法简单这整整三个问题。</p>
 <p>  你应该已经注意到在第一张表格中，-4只有对应的补码，而原码不适用。这样写当然是不对的。不经修正的原码有这样的缺陷：000和100在原码中严格地看来代表着＋0和－0，但±0对于数学和正常人来说都是没有意义的。为了满足0就是0，指定000就是0而不是什么＋0，那100又如何处置呢，不能指定它就是4，因为第一位数被用来表示正负而不是值，你会发现在原码方法有这样一个叫人万般尴尬的特殊情况——即使强行为负零指定了某个特定的值，也不会有什么额外好处。</p>
-<p>  万幸的是在补码中没有这么尴尬，就当100是-4的原码，则-4的补码也是100，所以补码还处理了正负零这第四个问题（如Java中占8位的byte型表示－128<del>127而不是－127</del>127，－128~－1和0到127都有128个数），当然在真正使用原码和反码的情况里也是能解决正负零问题的，只是不如补码自洽且利于计算。</p>
+<p>  万幸的是在补码中没有这么尴尬，就当100是-4的原码，则-4的补码也是100，所以补码还处理了正负零这第四个问题（如Java中占8位的byte型表示－128~127而不是－127~127，－128~－1和0到127都有128个数），当然在真正使用原码和反码的情况里也是能解决正负零问题的，只是不如补码自洽且利于计算。</p>
 <p>  看得出，原码是一种“天真简单的”映射，而补码旨在重排。你可以为它们找出很多联系来绕晕自己，甚至联系反码来进一步绕晕自己，或者把它们看成泾渭分明的三种方法——你完全不需要知道原码也可以使用补码，只需要遵照以下规则：</p>
 <ol>
-<li><p>使用总数为偶数的一系列循环二进制数。</p>
-</li>
-<li><p>将这些表示对半拆开。</p>
-</li>
-<li><p>前半部分依次表示0, 1, 2… N。</p>
-</li>
+<li>使用总数为偶数的一系列循环二进制数。</li>
+<li>将这些表示对半拆开。</li>
+<li>前半部分依次表示0, 1, 2… N。</li>
 <li><p>后半部分依次表示－(N+1), －(N), －(N-1)… -1。</p>
-<p>你也可以把-3+10=7理解成-3和7对10同模，并提炼出这样的关系：<br>$$<br>j\equiv(j+k)\pmod{k}<br>$$<br>毕竟：<br>$$<br>j\mod{k}=j-k\quad (j\ge k&gt;0)<br>$$<br>表示方法和理解都是可以有很多种的。</p>
+<p>你也可以把-3+10=7理解成-3和7对10同模，并提炼出这样的关系：</p>
+<script type="math/tex; mode=display">
+j\equiv(j+k)\pmod{k}</script><p>毕竟：</p>
+<script type="math/tex; mode=display">
+j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很多种的。</p>
 </li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/08/09/%E9%87%8D%E6%B8%A9%E8%A1%A5%E7%A0%81%E5%92%8C%E5%8F%91%E6%83%B3/" data-id="ckdmxw9uw00000ould3ewb7lc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/08/09/%E9%87%8D%E6%B8%A9%E8%A1%A5%E7%A0%81%E5%92%8C%E5%8F%91%E6%83%B3/" data-id="ckdmyfulr0005kwul3nmb8sux" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E5%AD%A6/" rel="tag">数学</a></li></ul>
@@ -226,7 +239,6 @@
       
         <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>  原本的字段类型可能有多种，需要区别处理。</p>
 <img src="/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/1.png" class="">
-
 <p>  卫语句结构如上图，处理方式：</p>
 <ol>
 <li>字段为null或类型被static修饰时，略过此字段。</li>
@@ -242,23 +254,15 @@
 </ul>
 <h2 id="代码与测试"><a href="#代码与测试" class="headerlink" title="代码与测试"></a>代码与测试</h2><p>  工具类</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.Constructor;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Modifier;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DeepCloneUtil</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">DeepCloneUtil</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 通过反射实现对传入对象的深拷贝。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> originalObj 需要深拷贝的原本。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> &lt;T&gt;         用于指定返回对象的类型。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 深拷贝得到的副本。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">deepClone</span><span class="params">(Object originalObj)</span> </span>&#123;</span><br><span class="line">        Class&lt;?&gt; oClass = originalObj.getClass();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Object cloneObj = oClass.newInstance();</span><br><span class="line">            Field[] declaredFields = oClass.getDeclaredFields();</span><br><span class="line">            <span class="keyword">for</span> (Field declaredField : declaredFields) &#123;</span><br><span class="line">                declaredField.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">                Object fieldObj = declaredField.get(originalObj);</span><br><span class="line">                <span class="comment">//  判断原本类的某字段是否为final修饰，或原本的此字段为null。是则跳过此字段，执行下一次循环。</span></span><br><span class="line">                <span class="keyword">if</span> (fieldObj == <span class="keyword">null</span> || Modifier.isFinal(declaredField.getModifiers())) &#123;</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                Class&lt;?&gt; fieldType = declaredField.getType();</span><br><span class="line">                <span class="comment">//  判断原本类的某字段类型是否为字面量类型，Boolean，Character，Number的子类，枚举类或单例之一。</span></span><br><span class="line">                <span class="comment">//  是则直接将原本的此字段赋予副本，执行下一次循环。</span></span><br><span class="line">                <span class="keyword">if</span> (fieldType.isPrimitive()</span><br><span class="line">                        || fieldType == String<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span> </span>== Boolean<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span> </span>== Character<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span>.<span class="title">getSuperclass</span>() </span>== Number<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span>.<span class="title">getSuperclass</span>() </span>== Enum<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">isSingleton</span>(<span class="title">fieldType</span>)) </span>&#123;</span><br><span class="line">                    declaredField.set(cloneObj, declaredField.get(originalObj));</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//  对原本的此字段递归调用本方法，再将返回值赋予副本。</span></span><br><span class="line">                declaredField.set(cloneObj, deepClone(fieldObj));</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> ((T) cloneObj);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InstantiationException e) &#123;</span><br><span class="line">            System.err.println(<span class="string">"未能实例化"</span> + oClass.getName() + <span class="string">"类"</span>);</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">            System.err.println(<span class="string">"未能访问副本对象"</span>);</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 判断一个字段类型是否是单例模式。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> fieldType 需要判断的字段类型。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 字段类型为单例模式时返回true，否则返回false。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isSingleton</span><span class="params">(Class&lt;?&gt; fieldType)</span> </span>&#123;</span><br><span class="line">        Constructor&lt;?&gt;[] declaredConstructors = fieldType.getDeclaredConstructors();</span><br><span class="line">        <span class="comment">//  所有构造器都是私有时满足条件之一。</span></span><br><span class="line">        <span class="keyword">boolean</span> constructorsFlag = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">for</span> (Constructor&lt;?&gt; declaredConstructor : declaredConstructors) &#123;</span><br><span class="line">            declaredConstructor.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">if</span> (!Modifier.isPrivate(declaredConstructor.getModifiers())) &#123;</span><br><span class="line">                constructorsFlag = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            constructorsFlag = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//  只要有一个为static修饰且类型与本类相同的字段即满足条件之二。</span></span><br><span class="line">        <span class="keyword">boolean</span> fieldsFlag = <span class="keyword">false</span>;</span><br><span class="line">        Field[] declaredFields = fieldType.getDeclaredFields();</span><br><span class="line">        <span class="keyword">for</span> (Field field : declaredFields) &#123;</span><br><span class="line">            <span class="keyword">if</span> (Modifier.isStatic(field.getModifiers()) &amp;&amp; field.getType() == fieldType) &#123;</span><br><span class="line">                fieldsFlag = <span class="keyword">true</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//  两个条件都满足时返回true。</span></span><br><span class="line">        <span class="keyword">return</span> constructorsFlag &amp;&amp; fieldsFlag;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>  测试用例：</p>
   <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.math.BigDecimal;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用普通类，包含Car实例，SomeThingSingleton单例。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> height;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> weight;</span><br><span class="line">    <span class="keyword">private</span> BigDecimal balance;</span><br><span class="line">    <span class="keyword">private</span> Car car;</span><br><span class="line">    <span class="keyword">private</span> SomeThingSingleton something;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.ToString;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用单例，被Person实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@ToString</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SomeThingSingleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> SomeThingSingleton instance;</span><br><span class="line">    <span class="keyword">private</span> Double dNum;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SomeThingSingleton</span><span class="params">(Double dNum)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.dNum = dNum;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SomeThingSingleton <span class="title">getInstance</span><span class="params">(Double dNum)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (SomeThingSingleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> SomeThingSingleton(dNum);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description:  测试用普通类，其实例被Person实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Car</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer ID;</span><br><span class="line">    <span class="keyword">private</span> CarLicense license;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用普通类，包含枚举类，其实例被Person实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CarLicense</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Character firstName;</span><br><span class="line">    <span class="keyword">private</span> String num;</span><br><span class="line">    <span class="keyword">private</span> LicenseColor color;</span><br><span class="line">    <span class="keyword">private</span> Boolean status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用枚举类，其实例被CarLicense实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> LicenseColor &#123;</span><br><span class="line">    BLUE, GREEN, WHITE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>  测试：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.math.BigDecimal;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        CarLicense thisLicense = <span class="keyword">new</span> CarLicense(<span class="string">'A'</span>, <span class="string">"AS56IO98"</span>, LicenseColor.BLUE, <span class="keyword">true</span>);</span><br><span class="line">        Car thisCar = <span class="keyword">new</span> Car(<span class="string">"卡车"</span>, <span class="number">9849</span>, thisLicense);</span><br><span class="line">        Person thisOne = <span class="keyword">new</span> Person(<span class="string">"张三"</span>, <span class="number">30</span>, <span class="number">185.3</span>, <span class="number">60.1F</span>, BigDecimal.valueOf(<span class="number">1891487.15</span>), thisCar, SomeThingSingleton.getInstance(<span class="number">12.12</span>D));</span><br><span class="line">        Person copyOne = DeepCloneUtil.&lt;Person&gt;deepClone(thisOne);</span><br><span class="line">        <span class="keyword">if</span> (copyOne != <span class="keyword">null</span>) &#123;</span><br><span class="line">            System.out.println(<span class="string">"thisOne:"</span> + thisOne + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"copyOne:"</span> + copyOne + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"copyOne == thisOne :"</span> + (copyOne == thisOne) + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"---经由Lombok重写的equals方法---"</span> + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"copy.equals(thisOne) :"</span> + copyOne.equals(thisOne));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">thisOne:Person(name=张三, age=<span class="number">30</span>, height=<span class="number">185.3</span>, weight=<span class="number">60.1</span>, balance=<span class="number">1891487.15</span>, car=Car(name=卡车, ID=<span class="number">9849</span>, license=CarLicense(firstName=A, num=AS56IO98, color=BLUE, status=<span class="keyword">true</span>)), something=SomeThingSingleton(dNum=<span class="number">12.12</span>))</span><br><span class="line">copyOne:Person(name=张三, age=<span class="number">30</span>, height=<span class="number">185.3</span>, weight=<span class="number">60.1</span>, balance=<span class="number">1891487.15</span>, car=Car(name=卡车, ID=<span class="number">9849</span>, license=CarLicense(firstName=A, num=AS56IO98, color=BLUE, status=<span class="keyword">true</span>)), something=SomeThingSingleton(dNum=<span class="number">12.12</span>))</span><br><span class="line">copyOne == thisOne :<span class="keyword">false</span></span><br><span class="line">---经由Lombok重写的equals方法---</span><br><span class="line">copy.equals(thisOne) :<span class="keyword">true</span></span><br></pre></td></tr></table></figure>
-
 <p>  基本达成需求。</p>
 <h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>  实际情况中采用这种方式并不好，需要深拷贝时继承cloneable接口，或直接视乎具体情况新建对象即可。采用反射的方式虽然有通用性，然而反射效率不高，上另两法也便利，这个工具类还是不用为妙。</p>
 <p>  另外用序列化实现深拷贝<strong>更不可取</strong>，序列化底层同样使用反射实现，并且有大量其他工作。效率与此工具类有数量级差距。</p>
@@ -267,7 +271,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/" data-id="ckdlrasnb0005w0ul1f99bkdw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/" data-id="ckdmyfulr0006kwula96vf0ce" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
@@ -325,7 +329,7 @@
 </blockquote>
 <p>  这样行文似乎意指<code>?</code>不像<code>T</code>一样具有约束是重点，然而在后文谈及具有<code>? super SubClass</code>泛型的数据结构为何就能接受那些对象了呢……？实际上《Java核心技术 1卷》就没有作出相关解释。那么一个显而易见的问题出现了：</p>
 <p>  既然<code>? extends SuperClass</code>和<code>? super SubClass</code>都指代一些存在关系的对象，同样都是不具备约束的<code>?</code>通配符，为何就会有 Producer 和 Consumer 的现象呢？实在是令人费解。</p>
-<h2 id="猜测"><a href="#猜测" class="headerlink" title="猜测"></a>猜测</h2><p>  <strong>*<u>以下是未经任何证实的个人猜测：</u>*</strong></p>
+<h2 id="猜测"><a href="#猜测" class="headerlink" title="猜测"></a>猜测</h2><p>  <strong><em><u>以下是未经任何证实的个人猜测：</u></em></strong></p>
 <p>  重点在于，子类继承超类所有的成员变量和方法，一个类可以扩展一个父类且实现多个接口，更能自己新增成员变量和方法。这意味着子类一定具有不少于超类的信息，反过来说，超类的信息一定小于或等于子类。</p>
 <p>  之所以<code>? extends SuperClass</code>不能存入<code>SuperClass</code>或者<code>SuperClass</code>的子类的对象，首先如《Java核心技术 1卷》所说，因为<code>?</code>并不匹配，原则上究竟存入什么对象是不可预测的，而Java设计者不想为了<code>SuperClass</code>开特例——毕竟想要存入<code>SuperClass</code>大可使用<code>&lt;SuperClass&gt;</code>，所以连<code>SuperClass</code>对象也不被接受，其次这样给定的上界限只保证了最小信息量，向其中存入<code>SuperClass</code>的子类的对象存在信息溢出的风险。最后，不能插入其他任何类也说得通了，那些类的信息根本就不能保证匹配。</p>
 <p>  而<code>? super SubClass</code>这样给定的下界限保证了最大信息量，即使<code>?</code>不匹配，因得这一系列对象的存入完全没有风险，所以存入是可以接受的。</p>
@@ -333,7 +337,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/" data-id="ckdlrasn90004w0ulfad554hr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/" data-id="ckdmyfulp0004kwulhqlj3g7j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
@@ -376,18 +380,15 @@
 <p>后缀名：txt</p>
 </blockquote>
 <h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Scanner input = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">    <span class="comment">// 正则表达式：Group1：一个大写字母，一个冒号；一个\；Group2：至少一个非\任意字符，一个\，二者顺序组合至少零个；</span></span><br><span class="line">    <span class="comment">// Group3：至少一个任意非空字符；一个\；Group4：至少一个任意非空字符。</span></span><br><span class="line">    String pattern = <span class="string">"([A-Z]&#123;1&#125;:)&#123;1&#125;\\\\((?:[^\\\\]+\\\\)*)(.+)\\.(.+)"</span>;</span><br><span class="line">    Pattern addressPattern = Pattern.compile(pattern);</span><br><span class="line">    System.out.println(<span class="string">"请输入文件路径："</span>);</span><br><span class="line">    String address = input.next();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!(address.matches(pattern))) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InvalidInputException();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">"合法输入"</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvalidInputException e) &#123;</span><br><span class="line">        System.out.println(<span class="string">"非法输入"</span>);</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    Matcher addressMatch = addressPattern.matcher(address);</span><br><span class="line">    <span class="keyword">while</span> (addressMatch.find()) &#123;</span><br><span class="line">        System.out.println(<span class="string">"盘符："</span>+addressMatch.group(<span class="number">1</span>));</span><br><span class="line">        System.out.println(<span class="string">"文件路径："</span>+addressMatch.group(<span class="number">2</span>));</span><br><span class="line">        System.out.println(<span class="string">"文件名："</span>+addressMatch.group(<span class="number">3</span>));</span><br><span class="line">        System.out.println(<span class="string">"后缀名："</span>+addressMatch.group(<span class="number">4</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InvalidInputException</span> <span class="keyword">extends</span> <span class="title">Exception</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">(String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">(String message, Throwable cause)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message, cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">(Throwable cause)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">InvalidInputException</span><span class="params">(String message, Throwable cause, <span class="keyword">boolean</span> enableSuppression, <span class="keyword">boolean</span> writableStackTrace)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message, cause, enableSuppression, writableStackTrace);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>  正则表达式写成后易读性较差，如有必要应写详细备注。可借助相关工具图形化方便理解。</p>
 <img src="/2020/07/05/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%A4%84%E7%90%86%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84/1.png" class="">
-
 <p>  Matcher实例只能使用一次。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/05/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%A4%84%E7%90%86%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84/" data-id="ckdlrasn60002w0ul78l5bf2t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/05/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%A4%84%E7%90%86%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84/" data-id="ckdmyfulm0002kwul7eaz7gl6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
@@ -421,98 +422,110 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="1-基本数据类型"><a href="#1-基本数据类型" class="headerlink" title="1.基本数据类型"></a>1.基本数据类型</h1><h2 id="1-1整数型"><a href="#1-1整数型" class="headerlink" title="1.1整数型"></a>1.1整数型</h2><table>
+        <h1 id="1-基本数据类型"><a href="#1-基本数据类型" class="headerlink" title="1.基本数据类型"></a>1.基本数据类型</h1><h2 id="1-1整数型"><a href="#1-1整数型" class="headerlink" title="1.1整数型"></a>1.1整数型</h2><div class="table-container">
+<table>
 <thead>
 <tr>
-<th align="center">整数型</th>
-<th align="center">占用字节</th>
-<th align="center">范围</th>
+<th style="text-align:center">整数型</th>
+<th style="text-align:center">占用字节</th>
+<th style="text-align:center">范围</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">byte</td>
-<td align="center">1</td>
-<td align="center">-128 ~ +127</td>
+<tbody>
+<tr>
+<td style="text-align:center">byte</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">-128 ~ +127</td>
 </tr>
 <tr>
-<td align="center">short</td>
-<td align="center">2</td>
-<td align="center">-32768 ~ +32767</td>
+<td style="text-align:center">short</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">-32768 ~ +32767</td>
 </tr>
 <tr>
-<td align="center">int</td>
-<td align="center">4</td>
-<td align="center">-2^31 ~ (+2^31)-1</td>
+<td style="text-align:center">int</td>
+<td style="text-align:center">4</td>
+<td style="text-align:center">-2^31 ~ (+2^31)-1</td>
 </tr>
 <tr>
-<td align="center">long</td>
-<td align="center">8</td>
-<td align="center">-2^63 ~ (+2^63)-1</td>
+<td style="text-align:center">long</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">-2^63 ~ (+2^63)-1</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>#默认为<code>int</code>型。</p>
-<h2 id="1-2浮点数型"><a href="#1-2浮点数型" class="headerlink" title="1.2浮点数型"></a>1.2浮点数型</h2><table>
+<h2 id="1-2浮点数型"><a href="#1-2浮点数型" class="headerlink" title="1.2浮点数型"></a>1.2浮点数型</h2><div class="table-container">
+<table>
 <thead>
 <tr>
-<th align="center">浮点数型</th>
-<th align="center">占用字节</th>
-<th align="center">范围</th>
+<th style="text-align:center">浮点数型</th>
+<th style="text-align:center">占用字节</th>
+<th style="text-align:center">范围</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">float</td>
-<td align="center">4</td>
-<td align="center">-2^128 ~ +2^128</td>
+<tbody>
+<tr>
+<td style="text-align:center">float</td>
+<td style="text-align:center">4</td>
+<td style="text-align:center">-2^128 ~ +2^128</td>
 </tr>
 <tr>
-<td align="center">double</td>
-<td align="center">8</td>
-<td align="center">-2^1024 ~ +2^1024</td>
+<td style="text-align:center">double</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">-2^1024 ~ +2^1024</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>#默认为<code>double</code>型。</p>
-<h2 id="1-3字符型"><a href="#1-3字符型" class="headerlink" title="1.3字符型"></a>1.3字符型</h2><table>
+<h2 id="1-3字符型"><a href="#1-3字符型" class="headerlink" title="1.3字符型"></a>1.3字符型</h2><div class="table-container">
+<table>
 <thead>
 <tr>
-<th align="center">字符型</th>
-<th align="center">占用字节</th>
-<th align="center">范围</th>
+<th style="text-align:center">字符型</th>
+<th style="text-align:center">占用字节</th>
+<th style="text-align:center">范围</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">chart</td>
-<td align="center">2</td>
-<td align="center">0 ~ 65535</td>
+<tbody>
+<tr>
+<td style="text-align:center">chart</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">0 ~ 65535</td>
 </tr>
-</tbody></table>
-<h2 id="1-4布尔型"><a href="#1-4布尔型" class="headerlink" title="1.4布尔型"></a>1.4布尔型</h2><table>
+</tbody>
+</table>
+</div>
+<h2 id="1-4布尔型"><a href="#1-4布尔型" class="headerlink" title="1.4布尔型"></a>1.4布尔型</h2><div class="table-container">
+<table>
 <thead>
 <tr>
-<th align="center">布尔型</th>
-<th align="center">占用字节</th>
-<th align="center">范围</th>
+<th style="text-align:center">布尔型</th>
+<th style="text-align:center">占用字节</th>
+<th style="text-align:center">范围</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">boolean</td>
-<td align="center">1</td>
-<td align="center">ture/false</td>
+<tbody>
+<tr>
+<td style="text-align:center">boolean</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">ture/false</td>
 </tr>
-</tbody></table>
-<h1 id="2-数据转换"><a href="#2-数据转换" class="headerlink" title="2.数据转换"></a>2.数据转换</h1><h2 id="2-1-自动转换"><a href="#2-1-自动转换" class="headerlink" title="2.1 自动转换"></a>2.1 自动转换</h2><p>&#8194;&#8194;数字表示范围小的数据类型可以自动转化为数字表示范围大的。</p>
-<img src="/2020/02/08/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/1-1593926707290.jpg" class="">
-
+</tbody>
+</table>
+</div>
+<h1 id="2-数据转换"><a href="#2-数据转换" class="headerlink" title="2.数据转换"></a>2.数据转换</h1><h2 id="2-1-自动转换"><a href="#2-1-自动转换" class="headerlink" title="2.1 自动转换"></a>2.1 自动转换</h2><p>&#8194;&#8194;数字表示范围小的数据类型可以自动转化为数字表示范围大的。<br><img src="/2020/02/08/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/1-1593926707290.jpg" class=""></p>
 <h2 id="2-1强制转换"><a href="#2-1强制转换" class="headerlink" title="2.1强制转换"></a>2.1强制转换</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100000000</span>;</span><br><span class="line"><span class="keyword">int</span> b = <span class="number">3000</span>;</span><br><span class="line"><span class="keyword">long</span> c = a * b;</span><br><span class="line">System.out.println(c);</span><br></pre></td></tr></table></figure>
-<p>输出结果为负数，明显不正确，<code>int</code>型与<code>int</code>型作计算后的结果仍然是<code>int</code>型，结果数值超过了<code>int</code>型的范围。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100000000</span>;</span><br><span class="line"><span class="keyword">int</span> b= <span class="number">3000</span>;</span><br><span class="line"><span class="keyword">long</span> c = (<span class="keyword">long</span>) a * b;</span><br><span class="line">System.out.println(c);</span><br></pre></td></tr></table></figure>
-<p>此时结果正确。</p>
+<p>输出结果为负数，明显不正确，<code>int</code>型与<code>int</code>型作计算后的结果仍然是<code>int</code>型，结果数值超过了<code>int</code>型的范围。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100000000</span>;</span><br><span class="line"><span class="keyword">int</span> b= <span class="number">3000</span>;</span><br><span class="line"><span class="keyword">long</span> c = (<span class="keyword">long</span>) a * b;</span><br><span class="line">System.out.println(c);</span><br></pre></td></tr></table></figure><br>此时结果正确。</p>
 <h2 id="2-2提升转换"><a href="#2-2提升转换" class="headerlink" title="2.2提升转换"></a>2.2提升转换</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100000000</span>;</span><br><span class="line"><span class="keyword">long</span> b = <span class="number">3000</span>;</span><br><span class="line"><span class="keyword">long</span> c = a * b;</span><br><span class="line">System.out.println(c);</span><br></pre></td></tr></table></figure>
 <p>因<code>int</code>型与<code>long</code>型作运算的结果为<code>long</code>型，结果在表示范围内，运算正确。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/08/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" data-id="ckdlrasmz0000w0ul0mdt4r9s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/02/08/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" data-id="ckdmyfulf0000kwul8syu4a3c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
@@ -632,6 +645,6 @@
 
 
 
-  </div>
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>
