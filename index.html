@@ -238,7 +238,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-26 23:19:08" itemprop="dateModified" datetime="2020-08-26T23:19:08+08:00">2020-08-26</time>
+                <time title="修改时间：2020-08-26 23:25:13" itemprop="dateModified" datetime="2020-08-26T23:25:13+08:00">2020-08-26</time>
               </span>
 
           
@@ -264,7 +264,7 @@
 </ol>
 <p>也许真实运行效率还需要考虑运行环境，但仍可以毫不客气地说，请避免使用第二种写法。</p>
 <h2 id="例二"><a href="#例二" class="headerlink" title="例二"></a>例二</h2><p>第二个例子要简单得多，是例一中功能对应的Controller层，须对网页传入参数的判断和赋值，不再列出改进前代码，改进后代码如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> currPage = Optional.ofNullable(req.getParameter(<span class="string">"currPage"</span>))</span><br><span class="line">                .filter(s -&gt; s.matches(<span class="string">"^\\d$"</span>))</span><br><span class="line">                .map(Integer::parseInt)</span><br><span class="line">                .orElse(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">int</span> pageSize = Optional.ofNullable(req.getParameter(<span class="string">"pageSize"</span>))</span><br><span class="line">                .filter(s -&gt; s.matches(<span class="string">"^\\d$"</span>))</span><br><span class="line">                .map(Integer::parseInt)</span><br><span class="line">                .orElse(<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> currPage = Optional.ofNullable(req.getParameter(<span class="string">"currPage"</span>))</span><br><span class="line">                .filter(s -&gt; s.matches(<span class="string">"^[\\d]&#123;1,9&#125;$"</span>))</span><br><span class="line">                .map(Integer::parseInt)</span><br><span class="line">                .orElse(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">int</span> pageSize = Optional.ofNullable(req.getParameter(<span class="string">"pageSize"</span>))</span><br><span class="line">                .filter(s -&gt; s.matches(<span class="string">"^[\\d]&#123;1,9&#125;$"</span>))</span><br><span class="line">                .map(Integer::parseInt)</span><br><span class="line">                .orElse(<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
 <p>Controller层中常见的处理流程：</p>
 <ol>
 <li>从HttpRequest对象中获取指定名称的参数。</li>
