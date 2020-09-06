@@ -2796,3 +2796,6 @@ mjx-container[display="true"] + br {
 .post-body li p {
   text-indent: 0em;
 }
+.post-body blockquote p {
+  text-indent: 0em;
+}
