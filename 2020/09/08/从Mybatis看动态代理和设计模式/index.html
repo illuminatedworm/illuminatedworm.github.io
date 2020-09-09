@@ -30,7 +30,7 @@
 <meta property="og:description" content="1 前言 接口规定方法，具体的实现类继承（inherit）接口，实现方法。这个过程就像某人签署了一份有要求的协议，遵守了某种约定。 向上转型，实例化子类对象，将其声明为超类类型。在Java中接口不能被实例化，但可以在向上转型时用作声明。 Java的反射机制赋予程序员在运行时分析和操作类的能力。  像这样的基础知识在初学时都会感觉有些不知所云，它们过于抽象，即使能完全理解其字面，也会因为缺乏对实际运">
 <meta property="og:image" content="http://yoursite.com/2020/09/08/%E4%BB%8EMybatis%E7%9C%8B%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%92%8C%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/Mybatis%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B.png">
 <meta property="article:published_time" content="2020-09-07T17:04:01.000Z">
-<meta property="article:modified_time" content="2020-09-09T05:57:04.388Z">
+<meta property="article:modified_time" content="2020-09-09T06:00:22.648Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="设计模式">
@@ -248,7 +248,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-09 13:57:04" itemprop="dateModified" datetime="2020-09-09T13:57:04+08:00">2020-09-09</time>
+                <time title="修改时间：2020-09-09 14:00:22" itemprop="dateModified" datetime="2020-09-09T14:00:22+08:00">2020-09-09</time>
               </span>
 
           
@@ -319,7 +319,7 @@
 <p><code>Object.class.equals(method.getDeclaringClass())</code>就是这个判断，是的，<code>Interface</code>并非继承自<code>Object</code>（不是<code>extends</code>，不是<code>implements</code>，也不是任何inherit）！这在单根继承的Java中是一件值得注意的事情，当然，接口无法被实例化，而可实例化的实现接口的类肯定继承自<code>Object</code>，单根继承并没有被破坏。</p>
 <p>如果不是接口就直接调用方法，是接口才会继续。后面的代码不用再看了，Mybatis再小心翼翼地判断了方法是否是默认方法（有方法体），最终，它用接口名和方法名去<code>Configuration</code>中匹配找到解析语句标签得到的相关对象，用以生成Sql语句并调用<code>SqlSession</code>中的对应方法执行。</p>
 <h2 id="4-不限于斯，第三方动态代理"><a href="#4-不限于斯，第三方动态代理" class="headerlink" title="4 不限于斯，第三方动态代理"></a>4 不限于斯，第三方动态代理</h2><p>就像之前提到的，Java原生动态代理需要一个前提，被代理类实现了某个接口。可是为Bean类提供接口并不是普遍的做法，那么Mybatis如何动态生成和填充相应的Bean对象呢，如果使用反射，那么要做的工作是：查找Bean类的无参构造器，改变其可访问性，查找字段，根据字段名查找Setter方法，改变其可访问性，构造实例，调用Setter方法……</p>
-<p>我们会发现反射对于当前的需求可以有些累赘：Java原生动态代理可以很快地生成新类，可是反射虽然说不上慢，却也不快，反射所须的上述一系列“周全”的工作拖慢了后续执行。为此，Mybatis中用了第三方工具CGLib来解决对Bean类代理问题，CGLib是基于继承机制和第三方ASM框架的，ASM框架加载被代理类的字节码文件，加以修改生成子类，靠更快的后续执行胜过反射，其效率在许多性能基准测试中都得到了证明，像FastJson也为了效率而用第三方ASM框架来处理Bean类的问题。</p>
+<p>我们会发现，即时忽略需要接口的前置条件，Java原生代理对于当前的需求仍不太适宜：Java原生动态代理可以很快地生成新类，可是反射虽然说不上慢，却也不快，反射所须的上述一系列“周全”的工作拖慢了后续执行。为此，Mybatis中用了第三方工具CGLib来解决对Bean类代理问题，CGLib是基于继承机制和第三方ASM框架的，ASM框架加载被代理类的字节码文件，加以修改生成子类，靠更快的后续执行胜过反射，其效率在许多性能基准测试中都得到了证明，像FastJson也为了效率而用第三方ASM框架来处理Bean类的问题。</p>
 <p>原生工具和第三方工具并没有什么优劣之别，只是侧重点不同，顾得全便顾不得快。此消彼长，客观规律罢了，实际应用中的重点在于选择。</p>
 
     </div>
