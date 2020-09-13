@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="参考资料：CGLib: The Missing Menual 1 绝对不要用匿名内部类创建并设置Callback许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建Enhancer的类中使用匿名内部类创建Callback是危险的。资料作者使用匿名内部类只是为了简化演示代码。 Enhancer对象会为它的每个Callback创建一个私有的，静">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CGLib之Enhancer小试">
+<meta property="og:url" content="http://yoursite.com/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/index.html">
+<meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
+<meta property="og:description" content="参考资料：CGLib: The Missing Menual 1 绝对不要用匿名内部类创建并设置Callback许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建Enhancer的类中使用匿名内部类创建Callback是危险的。资料作者使用匿名内部类只是为了简化演示代码。 Enhancer对象会为它的每个Callback创建一个私有的，静">
+<meta property="article:published_time" content="2020-09-13T08:07:03.000Z">
+<meta property="article:modified_time" content="2020-09-13T08:33:32.913Z">
+<meta property="article:author" content="IlluminatedWorm">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="CGLib">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://yoursite.com/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>CGLib之Enhancer小试 | IlluminatedWorm's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">IlluminatedWorm's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-绝对不要用匿名内部类创建并设置Callback"><span class="nav-number">1.</span> <span class="nav-text">1 绝对不要用匿名内部类创建并设置Callback</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-测试代码"><span class="nav-number">2.</span> <span class="nav-text">2 测试代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-流程小结，Callback类鉴别"><span class="nav-number">3.</span> <span class="nav-text">3 流程小结，Callback类鉴别</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">IlluminatedWorm</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/illuminatedworm" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;illuminatedworm" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:609210163@qq.com" title="E-Mail → mailto:609210163@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CGLib之Enhancer小试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-13 16:07:03 / 修改时间：16:33:32" itemprop="dateCreated datePublished" datetime="2020-09-13T16:07:03+08:00">2020-09-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>参考资料：<a href="https://dzone.com/articles/cglib-missing-manual" target="_blank" rel="noopener">CGLib: The Missing Menual</a></p>
+<h2 id="1-绝对不要用匿名内部类创建并设置Callback"><a href="#1-绝对不要用匿名内部类创建并设置Callback" class="headerlink" title="1 绝对不要用匿名内部类创建并设置Callback"></a>1 绝对不要用匿名内部类创建并设置Callback</h2><p>许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建<code>Enhancer</code>的类中使用匿名内部类创建<code>Callback</code>是危险的。资料作者使用匿名内部类只是为了简化演示代码。</p>
+<p><code>Enhancer</code>对象会为它的每个<code>Callback</code>创建一个私有的，静态的字段，而<code>Callback</code>本身在工作时，也会根据情况在<code>Enhancer</code>对象中加入静态字段。如果以匿名内部类创建<code>Callback</code>实例，由于匿名内部类隐式地包含对外部类实例的引用，这会造成外部类实例，<code>Enhancer</code>对象和<code>Callback</code>对象之间交错的相互引用，静态字段加上循环引用非常容易妨碍到GC回收（静态字段可以成为所谓的GC Root），这种情况下<code>Callback</code>对象<strong>永远</strong>不会被回收，这对于内存管理来说非常危险。</p>
+<p>在CGLib的使用中用匿名内部类实现<code>Callback</code>的诱惑，相比在Java原生动态中使用匿名内部类实现<code>InvocationHandler</code>更大，<code>InvocationHandler</code>通常需要包装被代理实例作为字段，在匿名内部类里做这一点显得非常冗长，而CGLib的代理对象是被代理对象的子类，能通过在<code>create()</code>方法中传入构造器形参类型和实参构造出完全代理被代理对象的实例。</p>
+<p>普通的成员内部类也隐式地包含对外部类实例的引用，因此和匿名内部类有同样的危险，但成员内部类的引用容易获得，至少能够管理，而匿名内部类则不能。另外注意Lambda表达式实质也是匿名内部类，所以也有同样的问题。</p>
+<h2 id="2-测试代码"><a href="#2-测试代码" class="headerlink" title="2 测试代码"></a>2 测试代码</h2><p>被代理类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Calculator</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Calculator</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cal0</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Calculator cal0 "</span> + name +</span><br><span class="line">                <span class="string">"\nplus: "</span> + add(a, b) +</span><br><span class="line">                <span class="string">"\nminus: "</span> + minus(a, b) +</span><br><span class="line">                <span class="string">"\ntimes: "</span> + times(a, b) +</span><br><span class="line">                <span class="string">"\ndivided: "</span> + divided(a, b));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cal1</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Calculator cal1 "</span> + name +</span><br><span class="line">                <span class="string">"\nplus: "</span> + add(a, b) +</span><br><span class="line">                <span class="string">"\nminus: "</span> + minus(a, b) +</span><br><span class="line">                <span class="string">"\ntimes: "</span> + times(a, b) +</span><br><span class="line">                <span class="string">"\ndivided: "</span> + divided(a, b));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a + b;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">minus</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a - b;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">times</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a * b;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">divided</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a / b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>CallBack</code>实现类：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import net.sf.cglib.proxy.MethodInterceptor;</span><br><span class="line">import net.sf.cglib.proxy.MethodProxy;</span><br><span class="line"></span><br><span class="line">import java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line"> * Author: Illuminated Worm</span><br><span class="line"> * Version: 1.00</span><br><span class="line"> * Description:</span><br><span class="line"> *&#x2F;</span><br><span class="line">public class CallBackDemo implements MethodInterceptor &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable &#123;</span><br><span class="line">        for (int i &#x3D; 0; i &lt; objects.length; i++) &#123;</span><br><span class="line">            objects[i] &#x3D; (Integer) objects[i] + 1;</span><br><span class="line">        &#125;</span><br><span class="line">        return methodProxy.invokeSuper(o, objects);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>单元测试代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.illuminatedworm.cglibdemo.Calculator;</span><br><span class="line"><span class="keyword">import</span> com.illuminatedworm.cglibdemo.CallBackDemo;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.CallbackHelper;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.Enhancer;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.NoOp;</span><br><span class="line"><span class="keyword">import</span> org.junit.jupiter.api.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UnitTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Integer a = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Integer b = <span class="number">7</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@BeforeAll</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">first</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Calculator calculator = <span class="keyword">new</span> Calculator(<span class="string">"raw"</span>);</span><br><span class="line">        calculator.cal0(a, b);</span><br><span class="line">        calculator.cal1(a, b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unit0</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Enhancer enhancer = <span class="keyword">new</span> Enhancer();</span><br><span class="line">        enhancer.setSuperclass(Calculator<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line">        CallbackHelper callbackHelper = new CallbackHelper(Calculator.class, new Class[0]) &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">protected</span> Object <span class="title">getCallback</span><span class="params">(Method method)</span> </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (method.getName().equals(<span class="string">"cal1"</span>)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> NoOp.INSTANCE;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> CallBackDemo();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        enhancer.setCallbackFilter(callbackHelper);</span><br><span class="line">        enhancer.setCallbacks(callbackHelper.getCallbacks());</span><br><span class="line"></span><br><span class="line">        Class[] argsType = &#123;String<span class="class">.<span class="keyword">class</span>&#125;</span>;</span><br><span class="line">        String[] arguments = &#123;<span class="string">"Proxy"</span>&#125;;</span><br><span class="line">        Calculator calculator = (Calculator) enhancer.create(argsType, arguments);</span><br><span class="line"></span><br><span class="line">        calculator.cal0(a, b);</span><br><span class="line">        calculator.cal1(a, b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<blockquote>
+<p>Calculator cal0 raw<br>plus: 10<br>minus: -4<br>times: 21<br>divided: 0<br>Calculator cal1 raw<br>plus: 10<br>minus: -4<br>times: 21<br>divided: 0</p>
+<p>Calculator cal0 Proxy<br>plus: 12<br>minus: -4<br>times: 32<br>divided: 0<br>Calculator cal1 Proxy<br>plus: 10<br>minus: -4<br>times: 21<br>divided: 0</p>
+</blockquote>
+<h2 id="3-流程小结，Callback类鉴别"><a href="#3-流程小结，Callback类鉴别" class="headerlink" title="3 流程小结，Callback类鉴别"></a>3 流程小结，Callback类鉴别</h2><p>现在根据使用流程逐个总结使用细节。</p>
+<p>在创建<code>Enhancer</code>对象后一定要使用<code>setSuperClass()</code>方法传入被代理类的类对象，即使<code>CallbackHelper</code>看起来也传入了被代理类的类对象，它不会为你完成这一步。？为什么可以传入额外的接口类对象？</p>
+<p><code>CallbackHelper</code>是<code>CallbackFilter</code>的默认实现类，设置过滤器的主要目的是将方法调用分发和具体的方法实现解耦，在这里做的工作基本就是根据方法名称调用不同的<code>Callback</code>。</p>
+<p>使用<code>CallbackHelper</code>的情况下可以更简洁地为<code>Enhancer</code>设置<code>Callback</code>。如果不打算解耦分发逻辑和方法实现的话，或者分发逻辑较简单可以并入<code>Callback</code>，那么<code>CallbackHelper</code>并非必须的。</p>
+<p><code>Callback</code>有如下几种：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">名称</th>
+<th style="text-align:center">详情</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">FixedValue</td>
+<td style="text-align:center">简单地用另一个对象（通常是固定的）代替原本的返回值</td>
+</tr>
+<tr>
+<td style="text-align:center">InvocationHandler</td>
+<td style="text-align:center">大致与Java原生动态代理用的InvocationHandler一样</td>
+</tr>
+<tr>
+<td style="text-align:center">MethodInterceptor</td>
+<td style="text-align:center">最全面，相比InvocationHandler多了一个MethodProxy类型的参数</td>
+</tr>
+<tr>
+<td style="text-align:center">LazyLoader</td>
+<td style="text-align:center">FixedValue的懒加载版，用于返回昂贵的对象</td>
+</tr>
+<tr>
+<td style="text-align:center">Dispatcher</td>
+<td style="text-align:center">每次方法调用都会重新生成返回对象，用于不改变对类的引用而改变其实现时</td>
+</tr>
+<tr>
+<td style="text-align:center">ProxyRefDispatcher</td>
+<td style="text-align:center">用于调用类的另一个方法</td>
+</tr>
+<tr>
+<td style="text-align:center">NoOp</td>
+<td style="text-align:center">使用被代理类原本的方法</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code>ProxyRefDispatcher</code>和<code>NoOp</code>基本上是用在解耦后的分发逻辑里的。<code>MethodInterceptor</code>虽然全面，但其他<code>Callback</code>更高效。</p>
+<p><code>MethodInterceptor</code>提供的<code>MehtodProxy</code>对象有<code>invoke()</code>和<code>invokeSuper()</code>两个方法，前者用于对<strong>别的对象</strong>调用方法，后者才是对当前对象调用父类（被代理类）的方法。如果对当前对象使用<code>invoke()</code>将会导致死循环！</p>
+<p>上文也提到过，CGLib的代理类是被代理类的子类，能轻易地完全摆脱被代理类实例，这可以在调用<code>create()</code>方法时完成。Java原生的动态代理不便于也不适宜完全取代被代理类实例。</p>
+<p><code>Enhancer</code>作为CGLib中的重要使用对象，其API还是比较清晰明白的。CGLib适合于对未实现接口的类进行动态代理，但它创建新类的速度并没有Java原生动态代理快，因此在Spring这种有数量不多的单例对象的情景里，只要目标实现了接口，Spring就选择Java原生代理。</p>
+<p>CGLib的<code>FastClass</code>通过直接对生成字节码来做到比反射更快。反射的底层是基于C语言的原生方法，其效率固然不那么快，然而在HotSpot这样的现代JVM中有着inflation优化机制：反射JNI调用超过一定次数（默认为15）后，便会生成本地的字节码。在这种情况下，反射的效率劣势得到了一定程度的弥补，所以CGLib的<code>FastClass</code>也不是那么推荐了。CGLib的主要问题在于，它会生成许多新类，消耗堆空间。</p>
+<p>悲伤的故事^ ^。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/CGLib/" rel="tag"># CGLib</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/09/13/SpringAOP%E5%B0%8F%E8%AF%95/" rel="prev" title="SpringAOP小试">
+                  <i class="fa fa-chevron-left"></i> SpringAOP小试
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/09/13/%E7%94%A8JMH%E6%B5%8B%E8%AF%95FastClass%E5%92%8C%E5%8F%8D%E5%B0%84%E7%9A%84%E6%95%88%E7%8E%87/" rel="next" title="用JMH测试FastClass和反射的效率">
+                  用JMH测试FastClass和反射的效率 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">IlluminatedWorm</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+      
+
+
+
+
+
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

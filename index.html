@@ -155,13 +155,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -200,6 +200,346 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/13/%E7%94%A8JMH%E6%B5%8B%E8%AF%95FastClass%E5%92%8C%E5%8F%8D%E5%B0%84%E7%9A%84%E6%95%88%E7%8E%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/13/%E7%94%A8JMH%E6%B5%8B%E8%AF%95FastClass%E5%92%8C%E5%8F%8D%E5%B0%84%E7%9A%84%E6%95%88%E7%8E%87/" class="post-title-link" itemprop="url">用JMH测试FastClass和反射的效率</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-13 16:07:41 / 修改时间：16:33:46" itemprop="dateCreated datePublished" datetime="2020-09-13T16:07:41+08:00">2020-09-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><p>现在来验证一下Inflation优化下，Java反射和CGLib的<code>FastClass</code>哪个更高效。所用测试参数，JDK，JMH和JVM详情见输出结果。</p>
+<h2 id="2-测试代码和输出结果"><a href="#2-测试代码和输出结果" class="headerlink" title="2 测试代码和输出结果"></a>2 测试代码和输出结果</h2><p>省略Bean类代码</p>
+<p><code>FastClass</code>实现方式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> net.sf.cglib.reflect.FastClass;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.reflect.FastMethod;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FastClassImpl</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> FastClass fastClass = FastClass.create(TestBean<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">FastClassImpl</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">clone</span><span class="params">(T originalObj)</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException </span>&#123;</span><br><span class="line">        Class[] noParam = <span class="keyword">new</span> Class[<span class="number">0</span>];</span><br><span class="line">        FastMethod getA = fastClass.getMethod(<span class="string">"getA"</span>, noParam);</span><br><span class="line">        FastMethod getB = fastClass.getMethod(<span class="string">"getB"</span>, noParam);</span><br><span class="line">        FastMethod getC = fastClass.getMethod(<span class="string">"getC"</span>, noParam);</span><br><span class="line">        FastMethod getD = fastClass.getMethod(<span class="string">"getD"</span>, noParam);</span><br><span class="line">        FastMethod setA = fastClass.getMethod(<span class="string">"setA"</span>, <span class="keyword">new</span> Class[]&#123;String<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line">        FastMethod setB = fastClass.getMethod(<span class="string">"setB"</span>, <span class="keyword">new</span> Class[]&#123;Integer<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line">        FastMethod setC = fastClass.getMethod(<span class="string">"setC"</span>, <span class="keyword">new</span> Class[]&#123;Double<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line">        FastMethod setD = fastClass.getMethod(<span class="string">"setD"</span>, <span class="keyword">new</span> Class[]&#123;LocalDateTime<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line"></span><br><span class="line">        Object a = getA.invoke(originalObj, noParam);</span><br><span class="line">        Object b = getB.invoke(originalObj, noParam);</span><br><span class="line">        Object c = getC.invoke(originalObj, noParam);</span><br><span class="line">        Object d = getD.invoke(originalObj, noParam);</span><br><span class="line"></span><br><span class="line">        Object clone = fastClass.newInstance();</span><br><span class="line">        setA.invoke(clone, <span class="keyword">new</span> Object[]&#123;a&#125;);</span><br><span class="line">        setB.invoke(clone, <span class="keyword">new</span> Object[]&#123;b&#125;);</span><br><span class="line">        setC.invoke(clone, <span class="keyword">new</span> Object[]&#123;c&#125;);</span><br><span class="line">        setD.invoke(clone, <span class="keyword">new</span> Object[]&#123;d&#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ((T) clone);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException </span>&#123;</span><br><span class="line">        TestBean a = <span class="keyword">new</span> TestBean(<span class="string">"a"</span>, <span class="number">50</span>, <span class="number">100</span>D, LocalDateTime.now());</span><br><span class="line">        TestBean clone = clone(a);</span><br><span class="line">        System.out.println(a == clone);</span><br><span class="line">        System.out.println(a.equals(clone));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试结果：</p>
+<blockquote>
+<p>false</p>
+<p>true</p>
+</blockquote>
+<p>反射实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.*;</span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReflectionImpl</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">ReflectionImpl</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">clone</span><span class="params">(T originalObj)</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException </span>&#123;</span><br><span class="line">        Class&lt;?&gt; oClass = originalObj.getClass();</span><br><span class="line"></span><br><span class="line">        Method getA = oClass.getMethod(<span class="string">"getA"</span>);</span><br><span class="line">        Method getB = oClass.getMethod(<span class="string">"getB"</span>);</span><br><span class="line">        Method getC = oClass.getMethod(<span class="string">"getC"</span>);</span><br><span class="line">        Method getD = oClass.getMethod(<span class="string">"getD"</span>);</span><br><span class="line">        Method setA = oClass.getMethod(<span class="string">"setA"</span>, String<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        Method setB = oClass.getMethod(<span class="string">"setB"</span>, Integer<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        Method setC = oClass.getMethod(<span class="string">"setC"</span>, Double<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        Method setD = oClass.getMethod(<span class="string">"setD"</span>, LocalDateTime<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line">        Object a = getA.invoke(originalObj);</span><br><span class="line">        Object b = getB.invoke(originalObj);</span><br><span class="line">        Object c = getC.invoke(originalObj);</span><br><span class="line">        Object d = getD.invoke(originalObj);</span><br><span class="line"></span><br><span class="line">        Constructor&lt;?&gt; constructor = oClass.getConstructor();</span><br><span class="line">        Object clone = constructor.newInstance();</span><br><span class="line">        setA.invoke(clone, a);</span><br><span class="line">        setB.invoke(clone, b);</span><br><span class="line">        setC.invoke(clone, c);</span><br><span class="line">        setD.invoke(clone, d);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ((T) clone);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException </span>&#123;</span><br><span class="line">        TestBean a = <span class="keyword">new</span> TestBean(<span class="string">"a"</span>, <span class="number">50</span>, <span class="number">100</span>D, LocalDateTime.now());</span><br><span class="line">        TestBean clone = clone(a);</span><br><span class="line">        System.out.println(a == clone);</span><br><span class="line">        System.out.println(a.equals(clone));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>false</p>
+<p>true</p>
+</blockquote>
+<p>基准性能测试：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.openjdk.jmh.annotations.*;</span><br><span class="line"><span class="keyword">import</span> org.openjdk.jmh.runner.Runner;</span><br><span class="line"><span class="keyword">import</span> org.openjdk.jmh.runner.RunnerException;</span><br><span class="line"><span class="keyword">import</span> org.openjdk.jmh.runner.options.Options;</span><br><span class="line"><span class="keyword">import</span> org.openjdk.jmh.runner.options.OptionsBuilder;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@BenchmarkMode</span>(Mode.AverageTime)</span><br><span class="line"><span class="meta">@Warmup</span>(iterations = <span class="number">3</span>)</span><br><span class="line"><span class="meta">@Measurement</span>(iterations = <span class="number">5</span>)</span><br><span class="line"><span class="meta">@Threads</span>(<span class="number">4</span>)</span><br><span class="line"><span class="meta">@Fork</span>(<span class="number">1</span>)</span><br><span class="line"><span class="meta">@OutputTimeUnit</span>(TimeUnit.NANOSECONDS)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> TestBean TEST_BEAN = <span class="keyword">new</span> TestBean(<span class="string">"a"</span>, <span class="number">50</span>, <span class="number">100</span>D, LocalDateTime.now());</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Benchmark</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">cglib</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> FastClassImpl.clone(TEST_BEAN);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Benchmark</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">reflection</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ReflectionImpl.clone(TEST_BEAN);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> RunnerException </span>&#123;</span><br><span class="line">        Options opt = <span class="keyword">new</span> OptionsBuilder()</span><br><span class="line">                .include(Test<span class="class">.<span class="keyword">class</span>.<span class="title">getSimpleName</span>())</span></span><br><span class="line"><span class="class">                .<span class="title">build</span>()</span>;</span><br><span class="line">        <span class="keyword">new</span> Runner(opt).run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果（部分）：</p>
+<blockquote>
+<p>JMH version: 1.25.2</p>
+<p>VM version: JDK 1.8.0_251, Java HotSpot(TM) 64-Bit Server VM, 25.251-b08</p>
+<p>Benchmark        Mode  Cnt     Score     Error  Units<br>Test.cglib       avgt    5  3614.397 ± 115.349  ns/op<br>Test.reflection  avgt    5  1502.978 ±  84.247  ns/op</p>
+</blockquote>
+<p>反射完胜。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/" class="post-title-link" itemprop="url">CGLib之Enhancer小试</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-13 16:07:03 / 修改时间：16:33:32" itemprop="dateCreated datePublished" datetime="2020-09-13T16:07:03+08:00">2020-09-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>参考资料：<a href="https://dzone.com/articles/cglib-missing-manual" target="_blank" rel="noopener">CGLib: The Missing Menual</a></p>
+<h2 id="1-绝对不要用匿名内部类创建并设置Callback"><a href="#1-绝对不要用匿名内部类创建并设置Callback" class="headerlink" title="1 绝对不要用匿名内部类创建并设置Callback"></a>1 绝对不要用匿名内部类创建并设置Callback</h2><p>许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建<code>Enhancer</code>的类中使用匿名内部类创建<code>Callback</code>是危险的。资料作者使用匿名内部类只是为了简化演示代码。</p>
+<p><code>Enhancer</code>对象会为它的每个<code>Callback</code>创建一个私有的，静态的字段，而<code>Callback</code>本身在工作时，也会根据情况在<code>Enhancer</code>对象中加入静态字段。如果以匿名内部类创建<code>Callback</code>实例，由于匿名内部类隐式地包含对外部类实例的引用，这会造成外部类实例，<code>Enhancer</code>对象和<code>Callback</code>对象之间交错的相互引用，静态字段加上循环引用非常容易妨碍到GC回收（静态字段可以成为所谓的GC Root），这种情况下<code>Callback</code>对象<strong>永远</strong>不会被回收，这对于内存管理来说非常危险。</p>
+<p>在CGLib的使用中用匿名内部类实现<code>Callback</code>的诱惑，相比在Java原生动态中使用匿名内部类实现<code>InvocationHandler</code>更大，<code>InvocationHandler</code>通常需要包装被代理实例作为字段，在匿名内部类里做这一点显得非常冗长，而CGLib的代理对象是被代理对象的子类，能通过在<code>create()</code>方法中传入构造器形参类型和实参构造出完全代理被代理对象的实例。</p>
+<p>普通的成员内部类也隐式地包含对外部类实例的引用，因此和匿名内部类有同样的危险，但成员内部类的引用容易获得，至少能够管理，而匿名内部类则不能。另外注意Lambda表达式实质也是匿名内部类，所以也有同样的问题。</p>
+<h2 id="2-测试代码"><a href="#2-测试代码" class="headerlink" title="2 测试代码"></a>2 测试代码</h2><p>被代理类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Calculator</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Calculator</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cal0</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Calculator cal0 "</span> + name +</span><br><span class="line">                <span class="string">"\nplus: "</span> + add(a, b) +</span><br><span class="line">                <span class="string">"\nminus: "</span> + minus(a, b) +</span><br><span class="line">                <span class="string">"\ntimes: "</span> + times(a, b) +</span><br><span class="line">                <span class="string">"\ndivided: "</span> + divided(a, b));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cal1</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Calculator cal1 "</span> + name +</span><br><span class="line">                <span class="string">"\nplus: "</span> + add(a, b) +</span><br><span class="line">                <span class="string">"\nminus: "</span> + minus(a, b) +</span><br><span class="line">                <span class="string">"\ntimes: "</span> + times(a, b) +</span><br><span class="line">                <span class="string">"\ndivided: "</span> + divided(a, b));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a + b;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">minus</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a - b;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">times</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a * b;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">divided</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a / b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>CallBack</code>实现类：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import net.sf.cglib.proxy.MethodInterceptor;</span><br><span class="line">import net.sf.cglib.proxy.MethodProxy;</span><br><span class="line"></span><br><span class="line">import java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line"> * Author: Illuminated Worm</span><br><span class="line"> * Version: 1.00</span><br><span class="line"> * Description:</span><br><span class="line"> *&#x2F;</span><br><span class="line">public class CallBackDemo implements MethodInterceptor &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable &#123;</span><br><span class="line">        for (int i &#x3D; 0; i &lt; objects.length; i++) &#123;</span><br><span class="line">            objects[i] &#x3D; (Integer) objects[i] + 1;</span><br><span class="line">        &#125;</span><br><span class="line">        return methodProxy.invokeSuper(o, objects);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>单元测试代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.illuminatedworm.cglibdemo.Calculator;</span><br><span class="line"><span class="keyword">import</span> com.illuminatedworm.cglibdemo.CallBackDemo;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.CallbackHelper;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.Enhancer;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.NoOp;</span><br><span class="line"><span class="keyword">import</span> org.junit.jupiter.api.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UnitTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Integer a = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Integer b = <span class="number">7</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@BeforeAll</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">first</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Calculator calculator = <span class="keyword">new</span> Calculator(<span class="string">"raw"</span>);</span><br><span class="line">        calculator.cal0(a, b);</span><br><span class="line">        calculator.cal1(a, b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unit0</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Enhancer enhancer = <span class="keyword">new</span> Enhancer();</span><br><span class="line">        enhancer.setSuperclass(Calculator<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line">        CallbackHelper callbackHelper = new CallbackHelper(Calculator.class, new Class[0]) &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">protected</span> Object <span class="title">getCallback</span><span class="params">(Method method)</span> </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (method.getName().equals(<span class="string">"cal1"</span>)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> NoOp.INSTANCE;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> CallBackDemo();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        enhancer.setCallbackFilter(callbackHelper);</span><br><span class="line">        enhancer.setCallbacks(callbackHelper.getCallbacks());</span><br><span class="line"></span><br><span class="line">        Class[] argsType = &#123;String<span class="class">.<span class="keyword">class</span>&#125;</span>;</span><br><span class="line">        String[] arguments = &#123;<span class="string">"Proxy"</span>&#125;;</span><br><span class="line">        Calculator calculator = (Calculator) enhancer.create(argsType, arguments);</span><br><span class="line"></span><br><span class="line">        calculator.cal0(a, b);</span><br><span class="line">        calculator.cal1(a, b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<blockquote>
+<p>Calculator cal0 raw<br>plus: 10<br>minus: -4<br>times: 21<br>divided: 0<br>Calculator cal1 raw<br>plus: 10<br>minus: -4<br>times: 21<br>divided: 0</p>
+<p>Calculator cal0 Proxy<br>plus: 12<br>minus: -4<br>times: 32<br>divided: 0<br>Calculator cal1 Proxy<br>plus: 10<br>minus: -4<br>times: 21<br>divided: 0</p>
+</blockquote>
+<h2 id="3-流程小结，Callback类鉴别"><a href="#3-流程小结，Callback类鉴别" class="headerlink" title="3 流程小结，Callback类鉴别"></a>3 流程小结，Callback类鉴别</h2><p>现在根据使用流程逐个总结使用细节。</p>
+<p>在创建<code>Enhancer</code>对象后一定要使用<code>setSuperClass()</code>方法传入被代理类的类对象，即使<code>CallbackHelper</code>看起来也传入了被代理类的类对象，它不会为你完成这一步。？为什么可以传入额外的接口类对象？</p>
+<p><code>CallbackHelper</code>是<code>CallbackFilter</code>的默认实现类，设置过滤器的主要目的是将方法调用分发和具体的方法实现解耦，在这里做的工作基本就是根据方法名称调用不同的<code>Callback</code>。</p>
+<p>使用<code>CallbackHelper</code>的情况下可以更简洁地为<code>Enhancer</code>设置<code>Callback</code>。如果不打算解耦分发逻辑和方法实现的话，或者分发逻辑较简单可以并入<code>Callback</code>，那么<code>CallbackHelper</code>并非必须的。</p>
+<p><code>Callback</code>有如下几种：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">名称</th>
+<th style="text-align:center">详情</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">FixedValue</td>
+<td style="text-align:center">简单地用另一个对象（通常是固定的）代替原本的返回值</td>
+</tr>
+<tr>
+<td style="text-align:center">InvocationHandler</td>
+<td style="text-align:center">大致与Java原生动态代理用的InvocationHandler一样</td>
+</tr>
+<tr>
+<td style="text-align:center">MethodInterceptor</td>
+<td style="text-align:center">最全面，相比InvocationHandler多了一个MethodProxy类型的参数</td>
+</tr>
+<tr>
+<td style="text-align:center">LazyLoader</td>
+<td style="text-align:center">FixedValue的懒加载版，用于返回昂贵的对象</td>
+</tr>
+<tr>
+<td style="text-align:center">Dispatcher</td>
+<td style="text-align:center">每次方法调用都会重新生成返回对象，用于不改变对类的引用而改变其实现时</td>
+</tr>
+<tr>
+<td style="text-align:center">ProxyRefDispatcher</td>
+<td style="text-align:center">用于调用类的另一个方法</td>
+</tr>
+<tr>
+<td style="text-align:center">NoOp</td>
+<td style="text-align:center">使用被代理类原本的方法</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code>ProxyRefDispatcher</code>和<code>NoOp</code>基本上是用在解耦后的分发逻辑里的。<code>MethodInterceptor</code>虽然全面，但其他<code>Callback</code>更高效。</p>
+<p><code>MethodInterceptor</code>提供的<code>MehtodProxy</code>对象有<code>invoke()</code>和<code>invokeSuper()</code>两个方法，前者用于对<strong>别的对象</strong>调用方法，后者才是对当前对象调用父类（被代理类）的方法。如果对当前对象使用<code>invoke()</code>将会导致死循环！</p>
+<p>上文也提到过，CGLib的代理类是被代理类的子类，能轻易地完全摆脱被代理类实例，这可以在调用<code>create()</code>方法时完成。Java原生的动态代理不便于也不适宜完全取代被代理类实例。</p>
+<p><code>Enhancer</code>作为CGLib中的重要使用对象，其API还是比较清晰明白的。CGLib适合于对未实现接口的类进行动态代理，但它创建新类的速度并没有Java原生动态代理快，因此在Spring这种有数量不多的单例对象的情景里，只要目标实现了接口，Spring就选择Java原生代理。</p>
+<p>CGLib的<code>FastClass</code>通过直接对生成字节码来做到比反射更快。反射的底层是基于C语言的原生方法，其效率固然不那么快，然而在HotSpot这样的现代JVM中有着inflation优化机制：反射JNI调用超过一定次数（默认为15）后，便会生成本地的字节码。在这种情况下，反射的效率劣势得到了一定程度的弥补，所以CGLib的<code>FastClass</code>也不是那么推荐了。CGLib的主要问题在于，它会生成许多新类，消耗堆空间。</p>
+<p>悲伤的故事^ ^。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/13/SpringAOP%E5%B0%8F%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/13/SpringAOP%E5%B0%8F%E8%AF%95/" class="post-title-link" itemprop="url">SpringAOP小试</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-13 16:06:30 / 修改时间：16:33:59" itemprop="dateCreated datePublished" datetime="2020-09-13T16:06:30+08:00">2020-09-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="1-测试代码"><a href="#1-测试代码" class="headerlink" title="1 测试代码"></a>1 测试代码</h2><p>导入jar包省略。</p>
+<p>Spring已配置包扫描，加入aspectj支持：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">aop:aspectj-autoproxy</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>“DAO”层代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Repository;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestDaoImpl</span> <span class="keyword">implements</span> <span class="title">TestDao</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">"Your input: "</span> + str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>“Service”层代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.illuminatedworm.annotation.WormCut;</span><br><span class="line"><span class="keyword">import</span> com.illuminatedworm.dao.TestDao;</span><br><span class="line"><span class="keyword">import</span> com.illuminatedworm.dao.TestDaoImpl;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.annotation.Resource;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestServiceImpl</span> <span class="keyword">implements</span> <span class="title">TestService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> TestDao testDao;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setTestDao</span><span class="params">(TestDaoImpl testDao)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.testDao = testDao;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">m0</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"method m0 triggered."</span>);</span><br><span class="line">        testDao.sayHello(str);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="meta">@WormCut</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">m1</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"method m1 triggered."</span>);</span><br><span class="line">        testDao.sayHello(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>自定义注释：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.annotation.ElementType;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Retention;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.RetentionPolicy;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Target;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Target</span>(ElementType.METHOD)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> WormCut &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Aspect：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.aspectj.lang.JoinPoint;</span><br><span class="line"><span class="keyword">import</span> org.aspectj.lang.ProceedingJoinPoint;</span><br><span class="line"><span class="keyword">import</span> org.aspectj.lang.annotation.*;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AspectDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> start;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut</span>(<span class="string">"execution(* com.javasm.service.TestServiceImpl.m0(..))"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cut0</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut</span>(<span class="string">"@annotation(com.javasm.annotation.WormCut)"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cut1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Around</span>(<span class="string">"cut0()"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">aroundAdvice</span><span class="params">(ProceedingJoinPoint pjp)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> start = System.currentTimeMillis();</span><br><span class="line">        Object proceed = pjp.proceed();</span><br><span class="line">        <span class="keyword">long</span> end = System.currentTimeMillis();</span><br><span class="line">        System.out.println(<span class="string">"Execution of method "</span> + pjp.getSignature().getName() + <span class="string">" took "</span> + (end - start) + <span class="string">"ms."</span>);</span><br><span class="line">        <span class="keyword">return</span> proceed;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before</span>(<span class="string">"cut0()"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">beforeAdvice</span><span class="params">(JoinPoint jp)</span> </span>&#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">        System.out.println(<span class="string">"Before advice triggered."</span>);</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"JoinPoint kind: "</span> + jp.getKind());</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"Method signature: "</span> + jp.getSignature().getName());</span><br><span class="line"></span><br><span class="line">        System.out.print(<span class="string">"Args: "</span>);</span><br><span class="line">        <span class="keyword">for</span> (Object arg : jp.getArgs()) &#123;</span><br><span class="line">            System.out.print(arg.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.print(<span class="string">"\n"</span>);</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"Target object hashcode: "</span> + jp.getTarget().hashCode());</span><br><span class="line">        System.out.println(<span class="string">"Proxy object hashcode: "</span> + jp.getThis().hashCode());</span><br><span class="line"></span><br><span class="line">        System.out.println(jp.getStaticPart().toLongString());</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AfterReturning</span>(pointcut = <span class="string">"cut0()"</span>, returning = <span class="string">"obj"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterReturningAdvice</span><span class="params">(JoinPoint jp, Object obj)</span> </span>&#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">        System.out.println(<span class="string">"AfterReturning advice triggered."</span>);</span><br><span class="line">        <span class="keyword">if</span> (obj == <span class="keyword">null</span>)</span><br><span class="line">            System.out.println(<span class="string">"There is no returning Obj."</span>);</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AfterThrowing</span>(pointcut = <span class="string">"cut0()"</span>, throwing = <span class="string">"e"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">throwAdvice</span><span class="params">(Throwable e)</span> </span>&#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">        System.out.println(<span class="string">"AfterThrowing advice triggered."</span>);</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@After</span>(<span class="string">"cut0()"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterAdvice</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">        System.out.println(<span class="string">"After advice triggered."</span>);</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before</span>(<span class="string">"cut1()"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">annotationBeforeAdvice</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">        System.out.println(<span class="string">"Annotation pointcut success."</span>);</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动测试：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.illuminatedworm.service.TestService;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.ClassPathXmlApplicationContext;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * Version: 1.00</span></span><br><span class="line"><span class="comment"> * Description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">init</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        ClassPathXmlApplicationContext applicationContext = <span class="keyword">new</span> ClassPathXmlApplicationContext(<span class="string">"applicationContext.xml"</span>);</span><br><span class="line">        TestService testService = applicationContext.getBean(TestService<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        testService.m0(<span class="string">"Hello Spring!"</span>);</span><br><span class="line">        testService.m1(<span class="string">"Hello Annotation!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<blockquote>
+<p>Before advice triggered.<br>JoinPoint kind: method-execution<br>Method signature: m0<br>Args: Hello Spring!<br>Target object hashcode: 790094605<br>Proxy object hashcode: -1294849058<br>execution(public abstract void com.javasm.service.TestService.m0(java.lang.String))</p>
+<p>method m0 triggered.<br>Your input: Hello Spring!</p>
+<p>AfterReturning advice triggered.<br>There is no returning Obj.</p>
+<p>After advice triggered.</p>
+<p>Execution of method m0 took 1007ms.</p>
+<p>Annotation pointcut success.</p>
+<p>method m1 triggered.<br>Your input: Hello Annotation!</p>
+</blockquote>
+<h2 id="2-流程小结，通知注释鉴别"><a href="#2-流程小结，通知注释鉴别" class="headerlink" title="2 流程小结，通知注释鉴别"></a>2 流程小结，通知注释鉴别</h2><p>将Contoller，Service和DAO等关键对象交给Spring管理，再辅以AspectJ，对于使用者来说，从亲手实现动态代理和在各处用代理对象替换被代理对象中解放出来，控制反转让施行真正的面向切面编程成为现实。</p>
+<p>需要声明切面，创建一个类，注释以<code>Aspect</code>并将其注入Spring。</p>
+<p>然后建立空方法，以<code>@Pointcut</code>注释来声明需要切入处，主要方式有：</p>
+<ol>
+<li><p>execution方式，大致格式为“[返回值类型]空格[包|类|方法的全限定名]（形参类型）”。其中返回值和全限定名都可以以*作为通配符，形参类型可以写作“..”以省略。</p>
+</li>
+<li><p>@annotation方式，将定位反转，通过切入处的指定注释来找到切入处，注释必须用全限定名。</p>
+</li>
+</ol>
+<p>最后建立方法，声明通知时机，通知时机的选择可见下表：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">注释</th>
+<th style="text-align:center">调用时机</th>
+<th style="text-align:center">注意事项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">@Before</td>
+<td style="text-align:center">切入方法调用前</td>
+<td style="text-align:center">可以从JoinPoint中获得除了切入方法返回值外的多数信息</td>
+</tr>
+<tr>
+<td style="text-align:center">@AfterReturning</td>
+<td style="text-align:center">切入方法返回后</td>
+<td style="text-align:center">在注释中赋值returning，可以获得切入方法返回值</td>
+</tr>
+<tr>
+<td style="text-align:center">@AfterThrowing</td>
+<td style="text-align:center">切入方法抛出异常后</td>
+<td style="text-align:center">在注释中赋值throwing，可以获得切入方法抛出的异常</td>
+</tr>
+<tr>
+<td style="text-align:center">@After</td>
+<td style="text-align:center">切入方法完成后</td>
+<td style="text-align:center">不能获得什么信息</td>
+</tr>
+<tr>
+<td style="text-align:center">@Around</td>
+<td style="text-align:center">囊括以上</td>
+<td style="text-align:center">最强大的通知，可以以ProceedingJoinPoint的proceed()方法划分切入方法执行前后。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>通过给@Around注释的方法中的<code>proceedingJoinPoint.proceed()</code>语句围绕try-catch-finally代码块，@Aroud注释的方法就能囊括所有其他调用时机。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -945,172 +1285,11 @@ j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很�
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/08/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="IlluminatedWorm">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="IlluminatedWorm's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/02/08/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" class="post-title-link" itemprop="url">Java数据类型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-02-08 16:19:33" itemprop="dateCreated datePublished" datetime="2020-02-08T16:19:33+08:00">2020-02-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-09 21:29:29" itemprop="dateModified" datetime="2020-08-09T21:29:29+08:00">2020-08-09</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="1-基本数据类型"><a href="#1-基本数据类型" class="headerlink" title="1.基本数据类型"></a>1.基本数据类型</h1><h2 id="1-1整数型"><a href="#1-1整数型" class="headerlink" title="1.1整数型"></a>1.1整数型</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center">整数型</th>
-<th style="text-align:center">占用字节</th>
-<th style="text-align:center">范围</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">byte</td>
-<td style="text-align:center">1</td>
-<td style="text-align:center">-128 ~ +127</td>
-</tr>
-<tr>
-<td style="text-align:center">short</td>
-<td style="text-align:center">2</td>
-<td style="text-align:center">-32768 ~ +32767</td>
-</tr>
-<tr>
-<td style="text-align:center">int</td>
-<td style="text-align:center">4</td>
-<td style="text-align:center">-2^31 ~ (+2^31)-1</td>
-</tr>
-<tr>
-<td style="text-align:center">long</td>
-<td style="text-align:center">8</td>
-<td style="text-align:center">-2^63 ~ (+2^63)-1</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>#默认为<code>int</code>型。</p>
-<h2 id="1-2浮点数型"><a href="#1-2浮点数型" class="headerlink" title="1.2浮点数型"></a>1.2浮点数型</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center">浮点数型</th>
-<th style="text-align:center">占用字节</th>
-<th style="text-align:center">范围</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">float</td>
-<td style="text-align:center">4</td>
-<td style="text-align:center">-2^128 ~ +2^128</td>
-</tr>
-<tr>
-<td style="text-align:center">double</td>
-<td style="text-align:center">8</td>
-<td style="text-align:center">-2^1024 ~ +2^1024</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>#默认为<code>double</code>型。</p>
-<h2 id="1-3字符型"><a href="#1-3字符型" class="headerlink" title="1.3字符型"></a>1.3字符型</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center">字符型</th>
-<th style="text-align:center">占用字节</th>
-<th style="text-align:center">范围</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">chart</td>
-<td style="text-align:center">2</td>
-<td style="text-align:center">0 ~ 65535</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h2 id="1-4布尔型"><a href="#1-4布尔型" class="headerlink" title="1.4布尔型"></a>1.4布尔型</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center">布尔型</th>
-<th style="text-align:center">占用字节</th>
-<th style="text-align:center">范围</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">boolean</td>
-<td style="text-align:center">1</td>
-<td style="text-align:center">ture/false</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h1 id="2-数据转换"><a href="#2-数据转换" class="headerlink" title="2.数据转换"></a>2.数据转换</h1><h2 id="2-1-自动转换"><a href="#2-1-自动转换" class="headerlink" title="2.1 自动转换"></a>2.1 自动转换</h2><p>数字表示范围小的数据类型可以自动转化为数字表示范围大的。<br><img src="/2020/02/08/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/1-1593926707290.jpg" class=""></p>
-<h2 id="2-1强制转换"><a href="#2-1强制转换" class="headerlink" title="2.1强制转换"></a>2.1强制转换</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100000000</span>;</span><br><span class="line"><span class="keyword">int</span> b = <span class="number">3000</span>;</span><br><span class="line"><span class="keyword">long</span> c = a * b;</span><br><span class="line">System.out.println(c);</span><br></pre></td></tr></table></figure>
-<p>输出结果为负数，明显不正确，<code>int</code>型与<code>int</code>型作计算后的结果仍然是<code>int</code>型，结果数值超过了<code>int</code>型的范围。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100000000</span>;</span><br><span class="line"><span class="keyword">int</span> b= <span class="number">3000</span>;</span><br><span class="line"><span class="keyword">long</span> c = (<span class="keyword">long</span>) a * b;</span><br><span class="line">System.out.println(c);</span><br></pre></td></tr></table></figure><br>此时结果正确。</p>
-<h2 id="2-2提升转换"><a href="#2-2提升转换" class="headerlink" title="2.2提升转换"></a>2.2提升转换</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">100000000</span>;</span><br><span class="line"><span class="keyword">long</span> b = <span class="number">3000</span>;</span><br><span class="line"><span class="keyword">long</span> c = a * b;</span><br><span class="line">System.out.println(c);</span><br></pre></td></tr></table></figure>
-<p>因<code>int</code>型与<code>long</code>型作运算的结果为<code>long</code>型，结果在表示范围内，运算正确。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+  </nav>
 
 
 
