@@ -29,7 +29,7 @@
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
 <meta property="og:description" content="主要参考：《Java核心技术 卷一》，《Effective Java》，Oracle官方文档。 0 对于应用程序员，究竟应该了解泛型到什么程度《Java核心技术 卷一》提到了这个问题，作者把对泛型的了解分为三个档次。我基本同意这种看法，不过我在实践中感到这一套说法应该有所补充。原文大意：   第一个档次，对于大多数程序员，知道它存在并且能用上就行了，了解具体机制是不必要的。  第二个档次，了解泛型">
 <meta property="article:published_time" content="2020-09-17T04:29:21.000Z">
-<meta property="article:modified_time" content="2020-09-20T16:35:38.838Z">
+<meta property="article:modified_time" content="2020-09-20T16:43:14.278Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-21 00:35:38" itemprop="dateModified" datetime="2020-09-21T00:35:38+08:00">2020-09-21</time>
+                <time title="修改时间：2020-09-21 00:43:14" itemprop="dateModified" datetime="2020-09-21T00:43:14+08:00">2020-09-21</time>
               </span>
 
           
@@ -284,7 +284,7 @@
 <p>以上种种烦恼在今天看来是不可思议的，甚至是荒唐的，这要归功于泛型。</p>
 <h2 id="2-泛型是什么，有什么用"><a href="#2-泛型是什么，有什么用" class="headerlink" title="2 泛型是什么，有什么用"></a>2 泛型是什么，有什么用</h2><p>非常简单，泛型就是把对象类型当作参数一样可输入，介绍给编译器，让编译器去考虑它，将上述的问题从运行时“降低”到了编译时，任何程序员都知道，如果程序非要出错不可，编译时错误总好过运行时错误。在IDE的帮助下，甚至不需要等到真正编译，在语法层面便能制止不当的编写。</p>
 <p>泛型的种种“复杂”都是为了确保这份美好愿景而衍生出的状况。</p>
-<h2 id="3-泛型不是什么"><a href="#3-泛型不是什么" class="headerlink" title="3 泛型不是什么"></a>3 泛型不是什么</h2><p>谨记泛型只能保持到编译时，为了保证它如你所愿的实现，编译器针对泛型做了名为“类型擦除”的一系列工作。</p>
+<h2 id="3-泛型不是什么"><a href="#3-泛型不是什么" class="headerlink" title="3 泛型不是什么"></a>3 泛型不是什么</h2><p>谨记泛型只能保持到编译时（其实这个说法不够严谨，反射可以在运行时获得泛型相关信息，对这一点的运用实现了所谓的类型字面量TypeLiteral，不过现在不在乎它），为了保证它如你所愿的实现，编译器针对泛型做了名为“类型擦除”的一系列工作。</p>
 <p>Java的泛型常常被拿来和C++的<code>Template</code>类作比较，这种比较是有道理的，它们要实现的概念类似而实现的方式却不同，C++的<code>Template</code>类在实例化时会真正的产生不同类型，而在Java中<code>ArrayList&lt;String&gt;</code>和<code>ArrayList&lt;Integer&gt;</code>严格地讲并不存在，这两个泛型类的表达依赖与原生的<code>ArrayList&lt;T&gt;</code>间的一种映射关系。</p>
 <h2 id="4-类型擦除到底做了些什么"><a href="#4-类型擦除到底做了些什么" class="headerlink" title="4 类型擦除到底做了些什么"></a>4 类型擦除到底做了些什么</h2><p>为了将参数化类型映射到原本的类型，Java编译器进行了类型擦除。经常可以在网上看到像是“Java的泛型只是半吊子，它其实被类型擦除了”这样的说法，这样的说法在某种程度上是有道理的，参数化类型和原生类型的映射关系比起C++的模板类确实显得比较“脆弱”，这是不同实现方式的优缺点不同。</p>
 <p>类型擦除做了以下工作：</p>
