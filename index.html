@@ -155,7 +155,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -200,6 +200,182 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/17/%E9%87%8D%E6%96%B0%E6%A2%B3%E7%90%86%E6%B3%9B%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/17/%E9%87%8D%E6%96%B0%E6%A2%B3%E7%90%86%E6%B3%9B%E5%9E%8B/" class="post-title-link" itemprop="url">重新梳理泛型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-09-17 12:29:21" itemprop="dateCreated datePublished" datetime="2020-09-17T12:29:21+08:00">2020-09-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-21 00:26:16" itemprop="dateModified" datetime="2020-09-21T00:26:16+08:00">2020-09-21</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>主要参考：《Java核心技术 卷一》，《Effective Java》，Oracle官方文档。</p>
+<h2 id="0-对于应用程序员，究竟应该了解泛型到什么程度"><a href="#0-对于应用程序员，究竟应该了解泛型到什么程度" class="headerlink" title="0 对于应用程序员，究竟应该了解泛型到什么程度"></a>0 对于应用程序员，究竟应该了解泛型到什么程度</h2><p>《Java核心技术 卷一》提到了这个问题，作者把对泛型的了解分为三个档次。我基本同意这种看法，不过我在实践中感到这一套说法应该有所补充。原文大意：</p>
+<blockquote>
+<ul>
+<li><p>第一个档次，对于大多数程序员，知道它存在并且能用上就行了，了解具体机制是不必要的。</p>
+</li>
+<li><p>第二个档次，了解泛型，当泛型的使用出现问题时，能够自己做到系统性的解决。</p>
+</li>
+<li><p>第三个档次，能自己编写参数化类型和泛型方法。</p>
+</li>
+</ul>
+</blockquote>
+<p>听起来很美好，好像可以为自己定下某个预期水平，根据所需降低学习成本。但至少对于我个人而言，事实并非如此。</p>
+<p>第一个档次根本是个幻景，只知道在IDE的提示下往尖括号内填写东西，并对此有所经验，毫不夸张地说，就是对泛型一无所知。</p>
+<p>第二个档次和第三个档次实际上是分不开的，了解泛型最好方法（我甚至相信是唯一可行的方法）就是自己编写参数化类型和泛型方法。起初，我抱着一种达到介于第一档次和第二档次之间的心态，但我很快发现了至少两点非常现实的问题：</p>
+<ol>
+<li>使用泛型时偶尔会出错，并且感到一头雾水。“为什么不能这么做”？</li>
+<li>在学习<code>Stream</code>的用法时，看不懂<code>Comparator</code>等接口的API，其中有着像是<code>static &lt;T,U extends Comparable&lt;? super U&gt; Comparator&lt;T&gt; comparing(Function&lt;? super T,? extends U&gt; keyExtractor)</code>这样的方法，看起来有些惊人。</li>
+</ol>
+<p>第二点是更广泛实践的一部分，只要你对函数式编程，Lambda表达式，流有一丝兴趣，我相信你也遇到过类似的问题。</p>
+<p>我为此仔细学习了泛型的通配符规则，在此期间产生了一篇<a href="https://illuminatedworm.github.io/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/" target="_blank" rel="noopener">PECS的一些解读</a>，那之后，我感觉我“比较彻底地解决问题了”，对泛型已经有了足够的了解。但是当我学习Sedgewick的《算法》，试着自己实现一些数据结构时，却感到涉及泛型时仍然“举步维艰”。</p>
+<p>我最终意识到，我需要重新系统地梳理泛型。</p>
+<p>其实这个话题可以推而广之，“对于应用程序员，究竟应该了解某某到什么程度”。有些东西的确是不需要深入的，例如类型推断，官方文档中用了一整章来讲Java的类型推断，当中大量地使用了数学语言，可以说很是晦涩难懂，但类型推断在几乎所有情况下都可以正常运作且效果符合直觉，网上可见的大多数所谓类型推断失败都源于错误使用，正当使用中要无意地使类型推断失效几乎不可能，并且从高抽象层面上理解它也非常便利，因此我认为大可接受类型推断的原理是黑箱。</p>
+<h2 id="1-为什么要有泛型"><a href="#1-为什么要有泛型" class="headerlink" title="1 为什么要有泛型"></a>1 为什么要有泛型</h2><p>在Java中，强制类型转换是一件令人痛苦的事情，编译器站在严格的角度，不能确保任何强制类型转换是安全的，程序员得自己认真考虑所有可能情况。但强制类型转换又是必要的，最典型的是像<code>Collection</code>接口下众多的实现类，他们被用来存储其他对象，显然针对被存储对象的不同类型针对编写各种实现是不现实的，那么在以前采取的做法是，向上转型，转到Java的终极超类<code>Object</code>，用<code>Object</code>来囊括一切，如<code>ArrayList</code>就持有一个<code>Object[]</code>。</p>
+<p>但这种做法导致了令人不快的现象，如：明明你往<code>Arraylist</code>中存入了<code>String</code>，从中取出时的却是<code>Object</code>，你不得不对返回值进行丑陋的强制类型转换，甚至因错误的转换出现<strong>运行时异常<code>ClassCastException</code></strong>。</p>
+<p>以上种种烦恼在今天看来是不可思议的，甚至是荒唐的，这要归功于泛型。</p>
+<h2 id="2-泛型是什么，有什么用"><a href="#2-泛型是什么，有什么用" class="headerlink" title="2 泛型是什么，有什么用"></a>2 泛型是什么，有什么用</h2><p>非常简单，泛型就是把对象类型当作参数一样可输入，介绍给编译器，让编译器去考虑它，将上述的问题从运行时“降低”到了编译时，任何程序员都知道，如果程序非要出错不可，编译时错误总好过运行时错误。在IDE的帮助下，甚至不需要等到真正编译，在语法层面便能制止不当的编写。</p>
+<p>泛型的种种“复杂”都是为了确保这份美好愿景而衍生出的状况。</p>
+<h2 id="3-泛型不是什么"><a href="#3-泛型不是什么" class="headerlink" title="3 泛型不是什么"></a>3 泛型不是什么</h2><p>谨记泛型只能保持到编译时，为了保证它如你所愿的实现，编译器针对泛型做了名为“类型擦除”的一系列工作。</p>
+<p>Java的泛型常常被拿来和C++的<code>Template</code>类作比较，这种比较是有道理的，它们要实现的概念类似而实现的方式却不同，C++的<code>Template</code>类在实例化时会真正的产生不同类型，而在Java中<code>ArrayList&lt;String&gt;</code>和<code>ArrayList&lt;Integer&gt;</code>严格地讲并不存在，这两个泛型类的表达依赖与原生的<code>ArrayList&lt;T&gt;</code>间的一种映射关系。</p>
+<h2 id="4-类型擦除到底做了些什么"><a href="#4-类型擦除到底做了些什么" class="headerlink" title="4 类型擦除到底做了些什么"></a>4 类型擦除到底做了些什么</h2><p>为了将参数化类型映射到原本的类型，Java编译器进行了类型擦除。经常可以在网上看到像是“Java的泛型只是半吊子，它其实被类型擦除了”这样的说法，这样的说法在某种程度上是有道理的，参数化类型和原生类型的映射关系比起C++的模板类确实显得比较“脆弱”，这是不同实现方式的优缺点不同。</p>
+<p>类型擦除做了以下工作：</p>
+<ol>
+<li>将所有类型形参替换成指定的界限，如果没有指定界限则替换为<code>Object</code>。（所以没有像C++模板类实例化时那样真正的许多“参数化类型”存在）</li>
+<li>在必要的地方插入强制类型转换，确保类型安全不被破坏。</li>
+<li>生成桥接方法，确保多态不被破坏。</li>
+</ol>
+<p>现在借Oracle官方教程中故意错误使用的实例代码来理解这些工作（有所修改）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> T data;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(T data)</span> </span>&#123; <span class="keyword">this</span>.data = data; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(T data)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Node.setData"</span>);</span><br><span class="line">        <span class="keyword">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyNode</span> <span class="keyword">extends</span> <span class="title">Node</span>&lt;<span class="title">Integer</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyNode</span><span class="params">(Integer data)</span> </span>&#123; <span class="keyword">super</span>(data); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Integer data)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"MyNode.setData"</span>);</span><br><span class="line">        <span class="keyword">super</span>.setData(data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MyNode mn = <span class="keyword">new</span> MyNode(<span class="number">5</span>);</span><br><span class="line">Node n = mn;            <span class="comment">// 使用参数化类型的原生形式，编译器抛出unchecked警告</span></span><br><span class="line">n.setData(<span class="string">"Hello"</span>);     </span><br><span class="line">Integer x = mn.data;</span><br></pre></td></tr></table></figure>
+<p>使用代码被执行类型擦除后：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MyNode mn = <span class="keyword">new</span> MyNode(<span class="number">5</span>);</span><br><span class="line">Node n = (MyNode)mn;         <span class="comment">// 使用参数化类型的原生形式，编译器抛出unchecked警告</span></span><br><span class="line">n.setData(<span class="string">"Hello"</span>);</span><br><span class="line">Integer x = (String)mn.data;</span><br></pre></td></tr></table></figure>
+<p>这样的使用毫无疑问是错误的，即使“参数化类型”并不存在，也不应该把<code>MyNode</code>实例声明为原生的<code>Node</code>类型，只是在继承时声明<code>Node&lt;Integer&gt;</code>是不行的。</p>
+<p>异常<code>ClassCastException</code>于<code>n.setData(&quot;Hello&quot;)</code>这一行被抛出，而不是<code>Integer x = (String)mn.data</code>，这好像有点奇怪，<code>MyNode</code>中只有<code>setData(Integer)</code>，可代码确实通过编译并且被运行了，甚至抛出了一个异常。</p>
+<p>以下是类被执行类型擦除后：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object data;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(Object data)</span> </span>&#123; <span class="keyword">this</span>.data = data; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Object data)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Node.setData"</span>);</span><br><span class="line">        <span class="keyword">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyNode</span> <span class="keyword">extends</span> <span class="title">Node</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyNode</span><span class="params">(Integer data)</span> </span>&#123; <span class="keyword">super</span>(data); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Integer data)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"MyNode.setData"</span>);</span><br><span class="line">        <span class="keyword">super</span>.setData(data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有什么不对劲，看似<code>MyNode</code>通过扩展<code>Node&lt;Integer&gt;</code>重写了<code>setData()</code>方法，实际上在类型擦除后，<code>Node</code>和<code>MyNode</code>中却分别出现了两个方法签名并不相同的方法<code>setData(Object)</code>和<code>setData(Integer)</code>，这不是重写（Override）而是重载（Overload），多态似乎被破坏了。为了确保多态，编译器在<code>MyNode</code>中生成了桥接方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Object data)</span> </span>&#123;</span><br><span class="line">    setData((Integer) data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>真正完成重写的方法是这个桥接方法，它连接超类方法和“重写方法”以确保多态，现在我们完全清楚地知道了为什么<code>n.setData(&quot;Hello&quot;)</code>可以通过编译并运行，最终还导致了<code>ClassCastException</code>，因为<code>MyNode</code>中确实有相应的方法。</p>
+<h2 id="5-泛型的局限"><a href="#5-泛型的局限" class="headerlink" title="5 泛型的局限"></a>5 泛型的局限</h2><p>Oracle的用例非常巧妙，它既可以警示不当用法，还能借此令用户理解泛型。使用参数化类型的原生类型容易导致错误，这种错误是很容易意识到的，但它还有另一些不那么直观的不当用法。</p>
+<h3 id="5-1-基本类型不能作为类型参数"><a href="#5-1-基本类型不能作为类型参数" class="headerlink" title="5.1 基本类型不能作为类型参数"></a>5.1 基本类型不能作为类型参数</h3><p>显然，基本类型不能被赋予声明为<code>Object</code>的变量，注意“字面量类型”和“基本类型”是有区别的，<code>String</code>可以作为参数化类型。解决方法也很简单，使用基本类型对应的包装类：<code>Integer</code>，<code>Long</code>等。但是要谨记，在处理大量数据时自动装箱和拆箱会导致明显的性能问题，JDK中有许多出于此考虑而专门针对基本类型的实现类，而不是简单地仅提供一个泛型类。</p>
+<h3 id="5-2-不能用new-T-来创建实例"><a href="#5-2-不能用new-T-来创建实例" class="headerlink" title="5.2 不能用new T()来创建实例"></a>5.2 不能用new T()来创建实例</h3><p><code>Integer integer = new T()</code>在被执行类型擦除后会是<code>Integer integer = new Object()</code>，这肯定行不通。只能对传入的对象使用反射寻找构造器来创建。很不幸，泛型不能帮你省去编写反射代码的痛苦。</p>
+<h3 id="5-3-不能用new-T-来创建数组"><a href="#5-3-不能用new-T-来创建数组" class="headerlink" title="5.3 不能用new T[]来创建数组"></a>5.3 不能用new T[]来创建数组</h3><p><code>T[] array = new T[1]</code>实际上是<code>Object[] array = new Object[0]</code>，这样就能放入任意对象，这明显有问题，最终Java决定完全拒绝这么做，用泛型创建数组会抛出编译错误。仍然需要对传入的对象使用反射，具体方法是<code>java.lang.reflect.Array.newInstance()</code>。</p>
+<h3 id="5-4-不能创建参数化类型的数组"><a href="#5-4-不能创建参数化类型的数组" class="headerlink" title="5.4 不能创建参数化类型的数组"></a>5.4 不能创建参数化类型的数组</h3><p>类似上一点，这也是彻底不被允许的，<code>new Node&lt;Integer&gt;[1]</code>将不能通过编译。只能使用<code>Collection</code>来存储参数化类型，如<code>ArrayList&lt;Node&lt;Integer&gt;&gt;</code>。</p>
+<h3 id="5-5-Varargs警告"><a href="#5-5-Varargs警告" class="headerlink" title="5.5 Varargs警告"></a>5.5 Varargs警告</h3><p>可变参数其实是以数组形式传入的，如果可变参数带有类型参数，就需要创建参数化类型的数组，不同于上一点，Java决定允许这么做，因为最常见的情况是只会从中读取元素，这么做不会有问题，可以放心地打上@SafeVarargs压制警告。但试图往当中添加或修改元素仍然是错误的。</p>
+<h3 id="5-6-不能用类型形参进行类型检测和转化"><a href="#5-6-不能用类型形参进行类型检测和转化" class="headerlink" title="5.6 不能用类型形参进行类型检测和转化"></a>5.6 不能用类型形参进行类型检测和转化</h3><p>类似的考虑，Java完全拒绝这种意味不明的做法，<code>obj instanceof Node&lt;Integer&gt;</code>和<code>Node&lt;Integer&gt;obj</code>这样的语句都会抛出编译错误。</p>
+<h3 id="5-6-静态字段和方法中不能引用类型变量"><a href="#5-6-静态字段和方法中不能引用类型变量" class="headerlink" title="5.6 静态字段和方法中不能引用类型变量"></a>5.6 静态字段和方法中不能引用类型变量</h3><p><code>static</code>代表着，这是属于类级别的成员，静态字段和静态方法将在所有实例之间共享，不同参数化类型的实例明显不能共享同一份静态成员，因此Java不允许这么做。</p>
+<h3 id="5-7-不能捕获参数化类型的实例"><a href="#5-7-不能捕获参数化类型的实例" class="headerlink" title="5.7 不能捕获参数化类型的实例"></a>5.7 不能捕获参数化类型的实例</h3><p><code>catch (T e)</code>无论如何都是不行的，即使类型参数被声明为<code>T extends Throwable</code>也一样。为什么这样设计似乎有点似是而非，并且据我所知，Oracle官方并没有对此给出过解答，同时似乎也没有什么权威书籍做过什么论断。<strong>因此以下是未经任何认证的个人猜测，至少存在这种情况，如果允许捕获参数化类型的实例，代码会在编译后产生错误顺序的<code>catch</code>子句：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        method0();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (T e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 类型擦除后</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        method0();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;<span class="comment">// 错误，IOExcpetion已被捕获</span></span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>泛型类也不能实现<code>Throwable</code>，因为异常可以持有引发自身的另一个异常，允许泛型类实现<code>Throwable</code>可能导致类似的错误。但只要类型擦除后某个实例的类型是<code>Throwable</code>，那么这个实例可以被抛出。</p>
+<p>用泛型能对异常处理做出一些意想不到的操作，《Java核心技术 卷一》就提到过一种欺骗编译器某个检查型异常是运行时异常的操作，借以突破<code>Runnable</code>接口中的<code>run()</code>方法不允许抛出检查型异常的限制。</p>
+<p>在异常处理中使用泛型很难说有什么优势，却显然会导致混乱，这种做法或许应该彻底避免。</p>
+<h3 id="5-8-小心潜在的方法签名冲突"><a href="#5-8-小心潜在的方法签名冲突" class="headerlink" title="5.8 小心潜在的方法签名冲突"></a>5.8 小心潜在的方法签名冲突</h3><p>由于类型擦除会改变方法签名，桥接方法会增加新方法，因此不能编写与之冲突的方法，有时潜在冲突不太明显，比如重写<code>Object</code>中的方法（其中的方法形参很多都是<code>Object</code>类）或复杂的继承情况。</p>
+<h2 id="6-通配符，限定，PECS"><a href="#6-通配符，限定，PECS" class="headerlink" title="6 通配符，限定，PECS"></a>6 通配符，限定，PECS</h2><p>这里不会解释什么是不变性，协变性和逆变性，不过仍然需要了解这样的一个事实：</p>
+<p><strong><code>List&lt;Integer&gt;</code>不是<code>List&lt;Number&gt;</code>的子类，类似情况皆是如此。</strong></p>
+<p>这好像有一点不符合直觉，但其实很有道理。<br>子类继承了超类的所有成员并且能够新增自己的成员，子类的信息量必然大于或等于超类（这个认识也是之前那篇<a href="https://illuminatedworm.github.io/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/" target="_blank" rel="noopener">PECS的一些解读</a>的关键）。可以向<code>List&lt;Number&gt;</code>中放入<code>Long</code>对象，而不能对<code>List&lt;Integer&gt;</code>做这样的事，<code>List&lt;Number&gt;</code>能做的比<code>List&lt;Integer&gt;</code>多，但<strong><code>List&lt;Integer&gt;</code>也不是<code>List&lt;Number&gt;</code>的超类</strong>，这时不能只想着信息量，这里面首先就没有继承关系。</p>
+<h3 id="6-1-extends限定"><a href="#6-1-extends限定" class="headerlink" title="6.1 extends限定"></a>6.1 extends限定</h3><p>道理是有了，事却坏了。<code>List&lt;E&gt;</code>有方法<code>addAll(Collection&lt;T&gt;)</code>，但不能向<code>List&lt;Number&gt;</code>中的<code>addAll()</code>方法中传入<code>Collection&lt;Integer&gt;</code>，因为它接受的参数类型现在是<code>Collection&lt;Number&gt;</code>。这显然不对劲。</p>
+<p>我们需要<code>addAll()</code>方法的形参类型是“E的<strong><em>所有</em></strong>子类的<code>Collection</code>”，答案就是<code>Collection&lt;? extends T&gt;</code>，现在可以将<code>List&lt;Integer&gt;</code>传入<code>List&lt;Number&gt;</code>的<code>addAll()</code>方法了。</p>
+<h3 id="6-2-super限定"><a href="#6-2-super限定" class="headerlink" title="6.2 super限定"></a>6.2 super限定</h3><p>那什么时候又（必须）用得着<code>&lt;? super T&gt;</code>呢，基本上是用在复杂继承时，考虑一个参数，它的抽象概念是“<strong><em>某个</em></strong>实现了针对自身的<code>Comparable</code>接口的类型”，考虑可能它的实参是<code>LocalDate</code>，这个类实现了<code>ChronoLocalDate</code>，而<code>ChronoLocalDate</code>又实现了<code>Comparable&lt;ChronoLocalDate&gt;</code>，<code>LocalDate</code>其实实现了<code>Comparable&lt;ChronoLocalDate&gt;</code>，<code>T extends Comparable&lt;T&gt;</code>是不行的，答案是<code>T extends Comparable&lt;? super T&gt;</code>，它的抽象概念是”<strong><em>某个</em></strong>实现了针对自身及其<strong><em>所有</em></strong>超类的<code>Comparable</code>接口的类型“。</p>
+<h3 id="6-3-PECS"><a href="#6-3-PECS" class="headerlink" title="6.3 PECS"></a>6.3 PECS</h3><p>太多的概念，太多复杂的表达，一点也不好运用和记忆。PECS就是为了助记而产生的——记住用处（在理解后）。</p>
+<blockquote>
+<ul>
+<li>T是产出者（只从中拿出）时，用&lt;? extends T&gt;代替T</li>
+<li>T是消费者（只往里填入）时，用&lt;? super T&gt;代替T</li>
+<li>T既是消费者又是产出者，就用T</li>
+</ul>
+</blockquote>
+<h3 id="6-1-T，U，R，K，V和"><a href="#6-1-T，U，R，K，V和" class="headerlink" title="6.1 T，U，R，K，V和?"></a>6.1 T，U，R，K，V和?</h3><p>首先明确，只要是字母，就没有本质区别。可以在同一个作用域中声明多个类型参数，而<code>T</code>，<code>U</code>和<code>R</code>代表的意思是，第一个类型参数，第二个类型参数和第三个类型参数，<code>T</code>来自Type，而<code>U</code>和<code>R</code>只是因为在键盘上离T键近（别问，不知道为什么不用Y），<code>R</code>不一定代表返回值。<code>K</code>和<code>V</code>代表Key和Value，常见于<code>Map</code>的使用。</p>
+<p><code>?</code>则和字母有着真正的区别，在上文中，我用斜体加粗黑字标明了一些形容词，<strong><em>某个</em></strong>和<strong><em>所有</em></strong>形容了它们之间的区别，<code>?</code>并不匹配特定的类型，之所以会用<code>T</code>，是因为会再次用到这个类型，而用<code>?</code>是因为想指代多个，可以说，这两者间其实没有联系……</p>
+<p>现在回到开头提到的<code>static &lt;T,U extends Comparable&lt;? super U&gt; Comparator&lt;T&gt; comparing(Function&lt;? super T,? extends U&gt; keyExtractor)</code>，终于能看懂了，它的类型参数列表的抽象概念是，“声明了两个类型参数，一个无限定，一个限定是实现了针对自身及其<strong><em>所有</em></strong>超类的<code>Comparable</code>接口”。</p>
+<p>无限定的<code>?</code>在类型擦除时会彻底消失，连<code>Object</code>也不会留下，所以使用无限定的<code>?</code>会很奇怪，考虑<code>setFoo(?)</code>和<code>? getFoo()</code>，前者究竟可以传入什么呢？答案是除了<code>null</code>什么都不能传入。至于后者，Java毕竟不能返回给你一个类型“什么都不是”的东西，所以只好返回<code>Object</code>类型。</p>
+<h2 id="7-部分术语中英文对照"><a href="#7-部分术语中英文对照" class="headerlink" title="7 部分术语中英文对照"></a>7 部分术语中英文对照</h2><p>特别标明一下以下三个术语。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">中文</th>
+<th style="text-align:center">英文</th>
+<th style="text-align:center">解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">泛型类</td>
+<td style="text-align:center">Generic class</td>
+<td style="text-align:center">声明了类型变量的类</td>
+</tr>
+<tr>
+<td style="text-align:center">泛型接口</td>
+<td style="text-align:center">Generic Interface</td>
+<td style="text-align:center">声明了类型变量的接口</td>
+</tr>
+<tr>
+<td style="text-align:center">参数化类型</td>
+<td style="text-align:center">Parameterized type</td>
+<td style="text-align:center">指代泛型类或有类型形参的泛型接口</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -439,10 +615,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-09-13 16:06:30 / 修改时间：21:57:11" itemprop="dateCreated datePublished" datetime="2020-09-13T16:06:30+08:00">2020-09-13</time>
+              <time title="创建时间：2020-09-13 16:06:30" itemprop="dateCreated datePublished" datetime="2020-09-13T16:06:30+08:00">2020-09-13</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-19 13:28:30" itemprop="dateModified" datetime="2020-09-19T13:28:30+08:00">2020-09-19</time>
+              </span>
 
           
 
@@ -476,7 +658,7 @@
 <p>Annotation pointcut success.</p>
 <p>method m1 triggered.<br>Your input: Hello Annotation!</p>
 </blockquote>
-<h2 id="2-流程小结，通知注释鉴别"><a href="#2-流程小结，通知注释鉴别" class="headerlink" title="2 流程小结，通知注释鉴别"></a>2 流程小结，通知注释鉴别</h2><p>将Contoller，Service和DAO等关键对象交给Spring管理，再辅以AspectJ，对于使用者来说，从亲手实现动态代理和在各处用代理对象替换被代理对象中解放出来，控制反转让施行真正的面向切面编程成为现实。</p>
+<h2 id="2-流程小结，通知注释鉴别"><a href="#2-流程小结，通知注释鉴别" class="headerlink" title="2 流程小结，通知注释鉴别"></a>2 流程小结，通知注释鉴别</h2><p>将Contoller，Service和DAO等关键对象交给Spring管理，再辅以AspectJ，对于使用者来说，从亲手实现动态代理和在各处用代理对象替换被代理对象中解放出来，控制反转让施行真正的面向切面编程成为现实。（要注意的是SpringAOP采用的这种实现方式并不是唯一的，如AspectJ本身是在编译时通过专用编译器生成字节码来实现的）</p>
 <p>需要声明切面，创建一个类，注释以<code>Aspect</code>并将其注入Spring。</p>
 <p>然后建立空方法，以<code>@Pointcut</code>注释来声明需要切入处，主要方式有：</p>
 <ol>
@@ -578,7 +760,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-12 19:11:11" itemprop="dateModified" datetime="2020-09-12T19:11:11+08:00">2020-09-12</time>
+                <time title="修改时间：2020-09-14 22:48:36" itemprop="dateModified" datetime="2020-09-14T22:48:36+08:00">2020-09-14</time>
               </span>
 
           
@@ -598,7 +780,7 @@
 </ol>
 <p>像这样的基础知识在初学时都会感觉有些不知所云，它们过于抽象，即使能完全理解其字面，也会因为缺乏对实际运用情景的了解而体会浅显。</p>
 <p>许多东西就像各种专业工具，它叫什么和包含了什么概念并不是首要的，首要的是它能做什么，某些情况下知道它不能做什么也非常重要。</p>
-<p>反射机制尚可联想出一些具有通用性的简单工具类来加以实践，而类似1，2点则彻底令人一头雾水，这是因为它们的概念和实现往往都和设计模式有关。Mybatis正是运用到了相关的设计模式，它毫无疑问是一个具体，有效，好用的工具——它实现了这样的目的：以更标准和更便捷的方式处理持久化层代码。借由理解这个工具的原理，可以解惑。但在此之前先复习一下动态代理。</p>
+<p>反射机制尚可联想出一些具有通用性的简单工具类来加以实践，而类似1，2点则彻底令人一头雾水，这是因为它们的概念和实现往往都和设计模式有关。Mybatis正是运用到了相关的设计模式，它毫无疑问是一个具体，有效，好用的工具——它实现了这样的目的：以更标准（以DTD模板和库内十分硬编码的解析方式约束配置文件写法）和更便捷的方式处理持久化层代码（可能需要搭配第三方工具和插件）。借由理解这个工具的原理，可以解惑。但在此之前先复习一下动态代理。</p>
 <h2 id="2-动态代理"><a href="#2-动态代理" class="headerlink" title="2 动态代理"></a>2 动态代理</h2><p>假设现在存在这样的需求：有相当数目的遗留代码，现在需要对其中的方法附加新功能，而你被要求不能改动遗留代码（更可能的是你自己就不想干牵一发而动全身的恐怖事情）。那么你需要的就是所谓的“非侵入式代码”，具体的做法是，写一个新的类，将旧类作为成员变量包进来，在新类的方法中调用旧类的方法并附加你的新功能。十分易懂。专门自己完全手写这样的类就是所谓的静态代理。</p>
 <p>动态代理和静态代理的本质都一样，所谓的动态就是通过找到一种既定的模式，让程序自己处理方法调用那一步，这样面对几十个类就不需要写几十个代理类了，而这份“既定的模式”就依赖接口来达成，程序通过接口来得知有哪些方法，<strong>Java原生动态代理</strong>的前提就是，<strong>被代理的类应该有其接口</strong>。</p>
 <h3 id="2-1-测试代码"><a href="#2-1-测试代码" class="headerlink" title="2.1 测试代码"></a>2.1 测试代码</h3><p>接口：</p>
@@ -1153,7 +1335,7 @@ j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很�
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-12 19:10:10" itemprop="dateModified" datetime="2020-09-12T19:10:10+08:00">2020-09-12</time>
+                <time title="修改时间：2020-09-20 21:52:51" itemprop="dateModified" datetime="2020-09-20T21:52:51+08:00">2020-09-20</time>
               </span>
 
           
@@ -1165,7 +1347,7 @@ j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很�
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="PECS"><a href="#PECS" class="headerlink" title="PECS"></a>PECS</h2><p>PECS 即 Producer Extends Consumer Super，是对使用了限定通配符作为类型参数的数据结构具有的一些现象的提炼总结，便于记忆。在网络上已经有许多或详或略的介绍，它们大多都解释了以下几点：</p>
+          <h2 id="PECS"><a href="#PECS" class="headerlink" title="PECS"></a>PECS</h2><p>PECS 即 Producer Extends Consumer Super，是对使用了限定通配符作为类型参数的数据结构的使用指导。在网络上已经有许多或详或略的介绍，它们大多都解释了以下几点：</p>
 <blockquote>
 <p>对于具有<code>? extends SuperClass</code>泛型的数据结构：</p>
 <blockquote>
@@ -1193,84 +1375,6 @@ j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很�
 <p>重点在于，子类继承超类所有的成员变量和方法，一个类可以扩展一个父类且实现多个接口，更能自己新增成员变量和方法。这意味着子类一定具有不少于超类的信息，反过来说，超类的信息一定小于或等于子类。</p>
 <p>之所以<code>? extends SuperClass</code>不能存入<code>SuperClass</code>或者<code>SuperClass</code>的子类的对象，首先，如《Java核心技术 1卷》所说，因为<code>?</code>并不匹配，原则上究竟存入什么对象是不可预测的，而Java设计者不想为了<code>SuperClass</code>开特例——毕竟想要存入<code>SuperClass</code>大可使用<code>&lt;SuperClass&gt;</code>，所以连<code>SuperClass</code>对象也不被接受。其次，这样给定的上界限只保证了最小信息量，向其中存入<code>SuperClass</code>的子类的对象存在信息溢出的风险。最后，不能插入其他任何类也说得通了，那些类的信息根本就不能保证匹配。</p>
 <p>而<code>? super SubClass</code>这样给定的下界限保证了最大信息量，即使<code>?</code>不匹配，因得这一系列对象的存入完全没有风险，所以存入是可以接受的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/05/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%A4%84%E7%90%86%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="IlluminatedWorm">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="IlluminatedWorm's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/07/05/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%A4%84%E7%90%86%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84/" class="post-title-link" itemprop="url">正则表达式处理文件路径</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-07-05 12:37:27" itemprop="dateCreated datePublished" datetime="2020-07-05T12:37:27+08:00">2020-07-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-09 21:30:31" itemprop="dateModified" datetime="2020-08-09T21:30:31+08:00">2020-08-09</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>从输入的字符串中识别出盘符，文件夹路径，文件名，文件后缀名并分别输出。</p>
-<blockquote>
-<p>例：E:\jboss-4.0.4.GA\server\minimal\conf\readme.txt</p>
-<p>盘符：E:</p>
-<p>文件路径：jboss-4.0.4.GA\server\minimal\conf\</p>
-<p>文件名：readme</p>
-<p>后缀名：txt</p>
-</blockquote>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Scanner input = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">    <span class="comment">// 正则表达式：Group1：一个大写字母，一个冒号；一个\；Group2：至少一个非\任意字符，一个\，二者顺序组合至少零个；</span></span><br><span class="line">    <span class="comment">// Group3：至少一个任意非空字符；一个\；Group4：至少一个任意非空字符。</span></span><br><span class="line">    String pattern = <span class="string">"([A-Z]&#123;1&#125;:)&#123;1&#125;\\\\((?:[^\\\\]+\\\\)*)(.+)\\.(.+)"</span>;</span><br><span class="line">    Pattern addressPattern = Pattern.compile(pattern);</span><br><span class="line">    System.out.println(<span class="string">"请输入文件路径："</span>);</span><br><span class="line">    String address = input.next();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!(address.matches(pattern))) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InvalidInputException();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">"合法输入"</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvalidInputException e) &#123;</span><br><span class="line">        System.out.println(<span class="string">"非法输入"</span>);</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    Matcher addressMatch = addressPattern.matcher(address);</span><br><span class="line">    <span class="keyword">while</span> (addressMatch.find()) &#123;</span><br><span class="line">        System.out.println(<span class="string">"盘符："</span>+addressMatch.group(<span class="number">1</span>));</span><br><span class="line">        System.out.println(<span class="string">"文件路径："</span>+addressMatch.group(<span class="number">2</span>));</span><br><span class="line">        System.out.println(<span class="string">"文件名："</span>+addressMatch.group(<span class="number">3</span>));</span><br><span class="line">        System.out.println(<span class="string">"后缀名："</span>+addressMatch.group(<span class="number">4</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InvalidInputException</span> <span class="keyword">extends</span> <span class="title">Exception</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">(String message)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">(String message, Throwable cause)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message, cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InvalidInputException</span><span class="params">(Throwable cause)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">InvalidInputException</span><span class="params">(String message, Throwable cause, <span class="keyword">boolean</span> enableSuppression, <span class="keyword">boolean</span> writableStackTrace)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message, cause, enableSuppression, writableStackTrace);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>正则表达式写成后易读性较差，如有必要应写详细备注。可借助相关工具图形化方便理解。</p>
-<img src="/2020/07/05/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%A4%84%E7%90%86%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84/1.png" class="">
-<p>Matcher实例只能使用一次。</p>
 
       
     </div>
