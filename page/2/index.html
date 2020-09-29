@@ -155,13 +155,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -200,6 +200,99 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/07/21/PECS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%A3%E8%AF%BB/" class="post-title-link" itemprop="url">PECS的一些解读</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-21 23:23:09" itemprop="dateCreated datePublished" datetime="2020-07-21T23:23:09+08:00">2020-07-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-20 21:52:51" itemprop="dateModified" datetime="2020-09-20T21:52:51+08:00">2020-09-20</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="PECS"><a href="#PECS" class="headerlink" title="PECS"></a>PECS</h2><p>PECS 即 Producer Extends Consumer Super，是对使用了限定通配符作为类型参数的数据结构的使用指导。在网络上已经有许多或详或略的介绍，它们大多都解释了以下几点：</p>
+<blockquote>
+<p>对于具有<code>? extends SuperClass</code>泛型的数据结构：</p>
+<blockquote>
+<ol>
+<li>不能向其中存入<code>SuperClass</code>或者<code>SuperClass</code>的子类的对象。实际上，不能向当中存入任何对象。</li>
+<li>可以从其中读取出SuperClass的对象。</li>
+</ol>
+</blockquote>
+<p>对于具有<code>? super SubClass</code>泛型的数据结构：</p>
+<blockquote>
+<ol>
+<li>可以向其中存入<code>SubClass</code>或者<code>SubClass</code>的超类的对象。</li>
+<li>可以从其中读取出对象，但编译器只能保证这些对象是<code>Object</code>对象。</li>
+</ol>
+</blockquote>
+</blockquote>
+<p>在理解像<code>ArrayList&lt;Integer&gt;</code>不是<code>ArrayList&lt;Number&gt;</code>的子类这样的基本事实后，PECS是容易理解的，存在这样的总结也是理所当然的。</p>
+<p>但网络上甚至相关权威书籍里没有具体解释的是，为什么存在上述的两个第一点。也许那些作者都认为这无论出于什么原因，不需要解释。而有些稍微提到的情况就特别令我迷惑，例如《Java核心技术 1卷》中说：</p>
+<blockquote>
+<p>编译器只知道需要 Employee 的某个子类型，但不知道具体是什么类型。它拒绝传递任何特定的类型。毕竟<code>?</code>不能匹配。</p>
+</blockquote>
+<p>这样行文似乎意指<code>?</code>不像<code>T</code>一样具有约束是重点，然而在后文谈及具有<code>? super SubClass</code>泛型的数据结构为何就能接受那些对象了呢……？《Java核心技术 1卷》没有作出相关解释。那么一个显而易见的问题出现了：</p>
+<p>  既然<code>? extends SuperClass</code>和<code>? super SubClass</code>都指代一些存在关系的对象，同样都是不具备约束的<code>?</code>通配符，为何就会有 Producer 和 Consumer 的现象呢？实在是令人费解。</p>
+<h2 id="猜测"><a href="#猜测" class="headerlink" title="猜测"></a>猜测</h2><p>  <strong><em><u>以下是未经任何证实的个人猜测：</u></em></strong></p>
+<p>重点在于，子类继承超类所有的成员变量和方法，一个类可以扩展一个父类且实现多个接口，更能自己新增成员变量和方法。这意味着子类一定具有不少于超类的信息，反过来说，超类的信息一定小于或等于子类。</p>
+<p>之所以<code>? extends SuperClass</code>不能存入<code>SuperClass</code>或者<code>SuperClass</code>的子类的对象，首先，如《Java核心技术 1卷》所说，因为<code>?</code>并不匹配，原则上究竟存入什么对象是不可预测的，而Java设计者不想为了<code>SuperClass</code>开特例——毕竟想要存入<code>SuperClass</code>大可使用<code>&lt;SuperClass&gt;</code>，所以连<code>SuperClass</code>对象也不被接受。其次，这样给定的上界限只保证了最小信息量，向其中存入<code>SuperClass</code>的子类的对象存在信息溢出的风险。最后，不能插入其他任何类也说得通了，那些类的信息根本就不能保证匹配。</p>
+<p>而<code>? super SubClass</code>这样给定的下界限保证了最大信息量，即使<code>?</code>不匹配，因得这一系列对象的存入完全没有风险，所以存入是可以接受的。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   

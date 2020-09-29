@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="太阳底下没有新鲜事。 goto与其批评 goto在Java中是保留关键字而不可用（虽然在字节码里我们可以找到它），唯一接近的东西是带标签的break语句： 1234567label:while (...) &amp;#123;    for (...) &amp;#123;        if (...) break label;        &#x2F;&#x2F; do something...    &amp;#125;&amp;#125;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面向切面编程与come from">
+<meta property="og:url" content="http://yoursite.com/2020/09/26/%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8B%E4%B8%8Ecome-from/index.html">
+<meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
+<meta property="og:description" content="太阳底下没有新鲜事。 goto与其批评 goto在Java中是保留关键字而不可用（虽然在字节码里我们可以找到它），唯一接近的东西是带标签的break语句： 1234567label:while (...) &amp;#123;    for (...) &amp;#123;        if (...) break label;        &#x2F;&#x2F; do something...    &amp;#125;&amp;#125;">
+<meta property="article:published_time" content="2020-09-26T15:07:42.000Z">
+<meta property="article:modified_time" content="2020-09-26T17:58:55.107Z">
+<meta property="article:author" content="IlluminatedWorm">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="AOP">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://yoursite.com/2020/09/26/%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8B%E4%B8%8Ecome-from/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>面向切面编程与come from | IlluminatedWorm's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">IlluminatedWorm's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#goto与其批评"><span class="nav-number">1.</span> <span class="nav-text">goto与其批评</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#comefrom，一个笑话"><span class="nav-number">2.</span> <span class="nav-text">comefrom，一个笑话</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AOP……？"><span class="nav-number">3.</span> <span class="nav-text">AOP……？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#然后"><span class="nav-number">4.</span> <span class="nav-text">然后</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">IlluminatedWorm</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/illuminatedworm" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;illuminatedworm" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:609210163@qq.com" title="E-Mail → mailto:609210163@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/26/%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8B%E4%B8%8Ecome-from/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面向切面编程与come from
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-09-26 23:07:42" itemprop="dateCreated datePublished" datetime="2020-09-26T23:07:42+08:00">2020-09-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-27 01:58:55" itemprop="dateModified" datetime="2020-09-27T01:58:55+08:00">2020-09-27</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>太阳底下没有新鲜事。</p>
+<h2 id="goto与其批评"><a href="#goto与其批评" class="headerlink" title="goto与其批评"></a>goto与其批评</h2><p> goto在Java中是保留关键字而不可用（虽然在字节码里我们可以找到它），唯一接近的东西是带标签的<code>break</code>语句：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">label:</span><br><span class="line"><span class="keyword">while</span> (...) &#123;</span><br><span class="line">    <span class="keyword">for</span> (...) &#123;</span><br><span class="line">        <span class="keyword">if</span> (...) <span class="keyword">break</span> label;</span><br><span class="line">        <span class="comment">// do something...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这已经是它最常见的用法，跳出嵌套的控制语句，普通的<code>break</code>只能跳出当前循环。我相信多数人都对它很陌生，也许只有在极少的专注算法实现的代码里会用得上带标签的<code>break</code>语句。</p>
+<p>许多编程语言都像java一样彻底不支持<code>goto</code>，或者十分有限地支持<code>goto</code>，当然也有不少语言（包括所谓新时代的语言）是完全支持的。<code>goto</code>被众多编程语言舍弃不是毫无理由的，数十年间，对<code>goto</code>的批评就没有停歇过，许多人认为，<code>goto</code>会造成混乱，它提供了一种强大的能力：让你随意跳转到代码的某一处（这里说的是最原生态的那种<code>goto</code>）。确实容易想象这样的情景：你在查看既有代码，读到某一行时，忽然发现了<code>goto</code>，于是你跳转到它指向的位置，继续读下去却发现了另一个<code>goto</code>……最终，你得在脑海里梳理出一个便于理解的结构。</p>
+<p>语法被滥用固然不全是语法本身的错，但像<code>goto</code>这样的语句格外容易被滥用，它太简单，效果却太强。<code>goto</code>代表的逻辑不是很符合人类的思维，“当怎样，就去哪里做什么云云”这样的思维活动大概只会在你看那些最不近人情的使用说明书时发生。</p>
+<p>无论如何，这不会是一场有答案的争论，就像其他一切关于编程语言的哲学与风格的争论。</p>
+<h2 id="comefrom，一个笑话"><a href="#comefrom，一个笑话" class="headerlink" title="comefrom，一个笑话"></a>comefrom，一个笑话</h2><p>如果你也认为<code>goto</code>确实比较糟糕，那你可能想不到它竟然能更糟，只需要把<code>goto</code>反转过来：运行到那处，跳转到此处。更糟的事情发生了，对于<code>goto</code>，你至少是明确地读到了它，清晰地意识到了这个跳转，但对于<code>comefrom</code>呢，你恐怕需要认真地看遍所有的代码，把它们都同时装在脑子里，才能进行结构梳理。</p>
+<p>不用担心，<code>comefrom</code>从来都是一个笑话，没有任何高级编程语言严肃地考虑过实现它，曾经有人在愚人节发布了python的<code>goto</code>和<code>comefrom</code>实现，虽然确实可用，但它仍然不是认真的。</p>
+<h2 id="AOP……？"><a href="#AOP……？" class="headerlink" title="AOP……？"></a>AOP……？</h2><p>现在从编程史话回到现实，重新考虑一下AOP，SpringAOP，每个Java程序员在最初接触到它时，都被灌输了一大堆概念：它是什么什么，它怎么怎么好，它不是OOP的代替而是补充……当尘埃落定，学会怎么用它之后，会发现也不过如此，我们用AOP做什么？日志记录，数据统计，统一异常处理，事务化。确实，如同最初得到的承诺，我们用AOP来做非核心业务的事情，并且效果斐然——毕竟把日志记录语句到处插入既杂乱又费事。</p>
+<p>但是，这从来都不是AOP的全部。SpringAOP只用到了AspectJ的部分功能，SpringAOP仅仅允许用户切入方法（SpringAOP的within，this和target选择器功能并不完整），当用户试图使用AspectJ的其他切入点，程序会抛出<code>IllegalStateException</code>异常。而完整的AspectJ其实允许用户切入成员变量，构造器和控制流代码块。这部分是因为，SpringAOP的实现方式是动态代理（JDK原生和CGLib），而AspectJ的主要做法则是在编译时改造原有字节码（在这种实现里，相关行为被称为织入weave才更贴切，核心代码就像一件毛衣，而AspectJ把切面代码编织插入核心代码，就像在毛衣上点缀装饰），显然后者需要自己的编译器，实际上，AspectJ有着自己的语法，和对应的一整套开发环境。</p>
+<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个Demo切入了Foo类的某个字段和所有构造器。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">privileged</span> <span class="class"><span class="keyword">aspect</span> <span class="title">AspectDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pointcut</span> <span class="title">pt0</span>() : <span class="keyword">get</span>(* com.illuminatedworm.test.Foo.localDate);</span><br><span class="line">    <span class="keyword">pointcut</span> <span class="title">pt1</span>() : <span class="keyword">initialization</span>(com.illuminatedworm.test.Foo.<span class="keyword">new</span>(..));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">before</span>() : pt0() || pt1() &#123;</span><br><span class="line">        System.out.println(<span class="string">"----Advice triggered----"</span>);</span><br><span class="line">        System.out.println(<span class="keyword">thisJoinPoint</span>.toString());</span><br><span class="line">        System.out.println(<span class="string">"target: "</span> + <span class="keyword">thisJoinPoint</span>.getTarget());</span><br><span class="line">        System.out.println(<span class="string">"this: "</span> + <span class="keyword">thisJoinPoint</span>.getThis());</span><br><span class="line">        System.out.println(<span class="string">"---------------------------------"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们当然可以只用AOP来方便日志记录业务，<strong><em>但AOP从来没有保证过自己只能做这样的事情</em></strong>，我们完全能修改方法的实参，甚至直接返回另一个不相干的结果。只是通常没人这么做罢了。</p>
+<p>AOP难道不会令人想起<code>goto</code>和<code>comefrom</code>么？恕我大胆地说，AOP完全就是<code>comefrom</code>和<code>goto</code>的高级形式，而且更过分，切面与核心代码间的耦合度更低，像AspectJ这样的实现还帮你把相关上下文打包传递过来了（从这方面想，AOP是OOP的补充十分令人信服），只要愿意，程序员可以做许多事情。如果你认为这只是臆想，那么你真的该看看Aspectj的文档，编译时织入只是最简单的方式，只要用户愿意，编译后和加载时也可以进行织入，还有至今没有实现的运行时织入。</p>
+<p>还记得我们假设的阅读带有<code>goto</code>和<code>comefrom</code>的代码是什么样的吗，阅读带有AOP的代码很难说会好到哪里去，把切面集中放到一个叫aspect的包里可能有帮助，但在庞大的工程里，模块和包数量众多。更荒唐的是，从察觉AOP的难易度来看，阅读被AspectJ编译器改造后的反编译代码远比阅读源代码容易察觉痕迹。</p>
+<p>源代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> DateTimeFormatter dtf = DateTimeFormatter.ofPattern(<span class="string">"yyyy-MM-dd"</span>);</span><br><span class="line">    <span class="keyword">protected</span> LocalDate localDate;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> LocalDate <span class="title">getLocalDate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> localDate;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 省略……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>反编译代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="comment">/* synthetic */</span> JoinPoint.StaticPart ajc$tjp_0;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="comment">/* synthetic */</span> JoinPoint.StaticPart ajc$tjp_1;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="comment">/* synthetic */</span> JoinPoint.StaticPart ajc$tjp_2;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> DateTimeFormatter dtf = DateTimeFormatter.ofPattern(<span class="string">"yyyy-MM-dd"</span>);</span><br><span class="line">    <span class="keyword">protected</span> LocalDate localDate;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="comment">/* synthetic */</span> <span class="keyword">void</span> ajc$preClinit() &#123;</span><br><span class="line">        Factory factory = <span class="keyword">new</span> Factory(<span class="string">"Foo.java"</span>, Foo<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        ajc$tjp_0 = factory.makeSJP(JoinPoint.FIELD_GET, (Signature) factory.makeFieldSig(<span class="string">"4"</span>, <span class="string">"localDate"</span>, <span class="string">"com.illuminatedworm.test.Foo"</span>, <span class="string">"java.time.LocalDate"</span>), <span class="number">18</span>);</span><br><span class="line">        ajc$tjp_1 = factory.makeSJP(JoinPoint.FIELD_GET, (Signature) factory.makeFieldSig(<span class="string">"4"</span>, <span class="string">"localDate"</span>, <span class="string">"com.illuminatedworm.test.Foo"</span>, <span class="string">"java.time.LocalDate"</span>), <span class="number">30</span>);</span><br><span class="line">        ajc$tjp_2 = factory.makeSJP(JoinPoint.INITIALIZATION, (Signature) factory.makeConstructorSig(World.xsetITD_VERSION_ORIGINAL, <span class="string">"com.illuminatedworm.test.Foo"</span>, <span class="string">"java.time.LocalDate"</span>, <span class="string">"localDate"</span>, <span class="string">""</span>), <span class="number">25</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 省略……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不要因此认为AspectJ的实现方式比较糟糕，较真的话，这种实现方式性能更好，多创建几个对象和多运行几行代码的代价可比动态代理小多了。</p>
+<h2 id="然后"><a href="#然后" class="headerlink" title="然后"></a>然后</h2><p>AOP是好的，<code>goto</code>并不是十恶不赦的，<code>comefrom</code>也许真有用武之地。它们如此地相似，风评却截然不同，是AOP概念包装与实践门槛以及约定用法限制了潜在的滥用吗？很难说得清，但得出这么一条结论是不难的：“只要怎样做，就能如何好”这样的说法实在欠奉，真正的价值关乎落到实处和如何落到实处。就像不要以AOP干预核心代码（事务化难道没有踩在这条红线上？），大家都明白，但在其他时候，现成的答案并不总有。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/AOP/" rel="tag"># AOP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/09/17/%E9%87%8D%E6%96%B0%E6%A2%B3%E7%90%86%E6%B3%9B%E5%9E%8B/" rel="prev" title="重新梳理泛型">
+                  <i class="fa fa-chevron-left"></i> 重新梳理泛型
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">IlluminatedWorm</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+      
+
+
+
+
+
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
