@@ -155,13 +155,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -200,6 +200,126 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/" class="post-title-link" itemprop="url">异步与同步，阻塞与非阻塞，并发与并行</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-01 22:04:05" itemprop="dateCreated datePublished" datetime="2020-10-01T22:04:05+08:00">2020-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-02 19:11:03" itemprop="dateModified" datetime="2020-10-02T19:11:03+08:00">2020-10-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在读《Java并发编程实战》，稍微整理一下基础知识。<br>这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。</p>
+<p>在Java中，线程生命周期如下：</p>
+<p><img src="异步与同步，阻塞与非阻塞，并发与并行/Thread.png" style="zoom:75%;" /></p>
+<h2 id="并发与并行"><a href="#并发与并行" class="headerlink" title="并发与并行"></a>并发与并行</h2><p>相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。</p>
+<p>借用名著《并发的艺术》的说法：</p>
+<blockquote>
+<p><em>A system is said to be</em> <em>concurrent</em> <em>if it can support two or more actions</em> <em>in progress</em> <em>at the same time. A system is said to be</em> <em>parallel</em> if it can support two or more actions executing simultaneously.</p>
+<p>（如果某个系统支持两个或者多个动作同时存在，那么这个系统就是一个并发系统。如果某个系统支持两个或者多个动作同时执行，那么这个系统就是一个并行系统。）</p>
+</blockquote>
+<p>区别在于“存在”和“执行”。</p>
+<p>并发是指有多个线程都已经调用了<code>start()</code>，无论是在Java还是在其他领域，并发总是自然地被确保的，即使是在单核处理器的计算机上运行，多个线程也会交替地出入内存，也就是说，重点在于这些线程是同时存在的，仅此而已。</p>
+<p>并行一定是指运行在多核处理器的计算机上的情况，多个线程被分配到不同的处理器内核上，真正的同时运行。</p>
+<p>可以得出一些强化认识的推论：</p>
+<ul>
+<li>并行是并发的真子集。</li>
+<li>对于单线程，这两个概念没有意义（Java程序肯定是多线程的——至少包括一个主线程和一个GC线程）。</li>
+<li>在单核处理器的计算机上运行多线程程序一定是并发的。</li>
+</ul>
+<h2 id="阻塞与非阻塞"><a href="#阻塞与非阻塞" class="headerlink" title="阻塞与非阻塞"></a>阻塞与非阻塞</h2><p>简单地说，阻塞与非阻塞就是关注线程是否会因某次操作而被挂起（等待，睡眠），而因为这几乎总是关乎系统调用，所以这对概念几乎总是与I/O一起被提及。之前已经说了本文只关注Java并发编程，不会讨论内核和底层的相关概念。</p>
+<p>在<code>InputStream.read()</code>方法的文档中有这样的描述：</p>
+<blockquote>
+<p>Reads some number of bytes from the input stream and stores them into the buffer array b. The number of bytes actually read is returned as an integer. This method blocks until input data is available, end of file is detected, or an exception is thrown.<br>If the length of b is zero, then no bytes are read and 0 is returned; otherwise, there is an attempt to read at least one byte. If no byte is available because the stream is at the end of the file, the value -1 is returned; otherwise, at least one byte is read and stored into b. </p>
+<p>从输入流中读入一些字节并将其存入缓冲数组b，实际读取的字节数将以整数形式返回。此方法将阻塞，直到输入数据可用，检测到文件末尾或某个异常被抛出。</p>
+<p>如果b的长度为零，则没有字节（会）被读取，返回0；否则，试图读取至少一个字节。如果因流达到文件末尾导致无字节可用，返回值-1；否则，至少有一字节被读取并存入b。</p>
+</blockquote>
+<p>虽然非常不像是人话，但这已经说尽了阻塞：当发起<code>read()</code>方法调用，直到达成某些条件前，将没有可用的结果，不管这些条件是预料的正常读取还是别的情况。既然没有可用的结果，那么当前线程运行下去将是意味不明的，将其挂起是完全理所当然的做法。</p>
+<p>而非阻塞是指，调用不会使得线程挂起，在定义上就是这么简单。</p>
+<h2 id="异步与同步"><a href="#异步与同步" class="headerlink" title="异步与同步"></a>异步与同步</h2><p>再次声明，本文不会像许多同类讨论一样大谈内核和底层。在本文的讨论范围中，同步和阻塞完全是一回事，异步和非阻塞也是一回事。</p>
+<p>但这样也导致本小节不会有什么真正可供鉴别的主题——<strong><em>抛掉硬件底层和操作系统层面的事情，所谓的异步与同步的差异，只是类库与框架呈现给程序员的表象</em></strong>。</p>
+<p>本小节<strong>将通过JavaScript看异步编程</strong>，在Web编程中，因为AJAX的流行，从JavaScript中接触异步编程十分普遍。而Java的异步编程更多地见于JavaFX，Swing和数据分析等地方，相对地不是那么常见和便于举例。</p>
+<p>许多Java程序员轻视JavaScript，以至于对<code>promise</code>对象所知甚少，但人人都见过这种写法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func(f)</span><br><span class="line">.then(f1)</span><br><span class="line">.catch(e1)</span><br><span class="line">.then(f2)</span><br><span class="line">.catch(e2)</span><br></pre></td></tr></table></figure>
+<p>它的抽象概念是，调用某个函数，如果它有成功的结果，调用f1，否则是失败的结果，调用e1，f1和e1又可能有成功和失败的结果，类似地，根据情况分别再调用f2和e2。</p>
+<p>这就是JavaScript的异步编程，可以时常看到前端程序员津津乐道它，与<code>async</code>和<code>awiat</code>关键词一并提及，声称这是异步编程的最佳解决方案（尽管这对关键词先出现在C#中）。</p>
+<p>但运行在某个浏览器中的JavaScript的代码总是阻塞的，JavaScript中根本没有线程概念，但它实际就是单线程的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'1'</span>);</span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'2'</span>);</span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'4'</span>);</span><br><span class="line">    &#125;, <span class="number">0</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'3'</span>);</span><br></pre></td></tr></table></figure>
+<p>这段代码永远依次输出1，2，3，4。“主线程”在输出3之后，才去执行了<code>setTimeout</code>函数（实际上，Java中的<code>Timer</code>类也是这样的，真正的多线程定时任务需要<code>ScheduledThreadPoolExecutor</code>，原生定时任务的实现别再用<code>Timer</code>了）。</p>
+<p>所以声称那是异步编程并不严谨，阻塞和非阻塞这对概念尚且关注的是一个对象的状态，但异步和同步关注的一定是至少两个对象间的关系，故而准确地讲，这应该叫作<em>异步风格编程</em>。它要解决的是程序员心智层面的认知问题，而不是CPU或者操作系统的问题。</p>
+<p>JavaScript的实践中，经常会出现这种情况：这个函数需要那个函数的回调，另一个函数又需要这个函数的回调，甚至那个函数又依赖第四个函数的回调……在<code>promise</code>成为JavaScript官方规范和出现在第三方类库中之前，名为回调地狱的现象困扰着前端程序员，以下是一个夸张而搞笑的示例：</p>
+<p><img src="异步与同步，阻塞与非阻塞，并发与并行/callback hell.jpeg" style="zoom:75%;" /></p>
+<p>这样的代码看起来令人眼疼头疼，难以维护。现在的JavaScript，可以把这样的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">nextStep</span> =&gt;</span> &#123;</span><br><span class="line">  getBeef(<span class="function"><span class="keyword">function</span> (<span class="params">beef</span>) </span>&#123;</span><br><span class="line">    cookBeef(beef, <span class="function"><span class="keyword">function</span> (<span class="params">cookedBeef</span>) </span>&#123;</span><br><span class="line">      getBuns(<span class="function"><span class="keyword">function</span> (<span class="params">buns</span>) </span>&#123;</span><br><span class="line">        putBeefBetweenBuns(buns, beef, <span class="function"><span class="keyword">function</span>(<span class="params">burger</span>) </span>&#123;</span><br><span class="line">          nextStep(burger)</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">makeBurger(<span class="function"><span class="keyword">function</span> (<span class="params">burger</span>) =&gt; </span>&#123;</span><br><span class="line">  serve(burger)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>变成这样的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> getBeef()</span><br><span class="line">    .then(<span class="function"><span class="params">beef</span> =&gt;</span> cookBeef(beef))</span><br><span class="line">    .then(<span class="function"><span class="params">cookedBeef</span> =&gt;</span> getBuns(beef))</span><br><span class="line">    .then(<span class="function"><span class="params">bunsAndBeef</span> =&gt;</span> putBeefBetweenBuns(bunsAndBeef));</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(<span class="function"><span class="params">burger</span> =&gt;</span> serve(burger));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 利用单参数函数的优势省略箭头函数的形式:</span></span><br><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> getBeef()</span><br><span class="line">    .then(cookBeef)</span><br><span class="line">    .then(getBuns)</span><br><span class="line">    .then(putBeefBetweenBuns);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(serve);</span><br></pre></td></tr></table></figure>
+<p>甚至是这样的（ES6的generator也可以做到，在此不举例）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> beef = <span class="keyword">await</span> getBeef();</span><br><span class="line">  <span class="keyword">const</span> cookedBeef = <span class="keyword">await</span> cookBeef(beef);</span><br><span class="line">  <span class="keyword">const</span> buns = <span class="keyword">await</span> getBuns();</span><br><span class="line">  <span class="keyword">const</span> burger = <span class="keyword">await</span> putBeefBetweenBuns(cookedBeef, buns);</span><br><span class="line">  <span class="keyword">return</span> burger;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(serve);</span><br></pre></td></tr></table></figure>
+<p>虽然每一行代码对应的具体<code>promise</code>对象的实现还是要落到程序员自己头上（所以还是那句话，没有什么魔法），但最终呈现的效果确实更清晰易读了。异步编程就是这样，只是一种风格，把有问题的实现方式换了一种实现方式（麻烦程度究竟有没有降低很难说，前端程序员中也有其他声音）。</p>
+<p>JDK中也有着<code>promise</code>的等价物，即<code>CompetableFuture&lt;T&gt;</code>类，最本质的不同还是在于多线程，此类下的某些方法允许程序员将任务丢给其他线程执行。另外，<code>Collection</code>接口和<code>BaseStream</code>接口中分别提供了<code>parallelStream()</code>和<code>parallel()</code>方法，可以很方便地把原本的数据源并行化（这个说法是由方法名而来的，其实参考第一小节的结论，说是并发化更严谨），最终效果类似<code>async</code>和<code>await</code>关键词：写的是同步代码，执行却不是。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>说到这一步，我们会发现，如果不按具体层次讨论，标题中的三对概念就会变得格外混乱，根本无从议起。</p>
+<p>难道JavaScript的异步编程只是个肤浅的称呼吗？它切实地解决了一些心智负担问题。</p>
+<p>难道并行流就不能在单核处理器的计算机上运行吗？当然可以。</p>
+<p>程序员能确保并行代码一定在真正并行吗？这似乎主要是JVM，操作系统和硬件的事情，程序员仅仅提供了并行代码。</p>
+<p>这些术语的使用有严格的界定吗？看看并行流和异步编程。</p>
+<p>异步一定比同步好吗？阻塞一定比非阻塞好吗？并发一定比并行好吗？多线程一定比单线程好吗？这些问题只有一个确定而非常无聊的答案，根据实际情况而定。</p>
+<p>没有什么魔法，不会因为几个概念的提出和辨明就能解决复杂的问题，问题永远会在那里，甚至不止一个。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -1289,102 +1409,6 @@
 j\equiv(j+k)\pmod{k}</script><p>毕竟：</p>
 <script type="math/tex; mode=display">
 j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很多种的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="IlluminatedWorm">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="IlluminatedWorm's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/" class="post-title-link" itemprop="url">用反射实现的泛用深拷贝工具类</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-07-29 14:30:01" itemprop="dateCreated datePublished" datetime="2020-07-29T14:30:01+08:00">2020-07-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-13 21:58:39" itemprop="dateModified" datetime="2020-09-13T21:58:39+08:00">2020-09-13</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>只是玩具，理由见最后。</p>
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>原本的字段类型可能有多种，需要区别处理。</p>
-<img src="/2020/07/29/%E7%94%A8%E5%8F%8D%E5%B0%84%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%B3%9B%E7%94%A8%E6%B7%B1%E6%8B%B7%E8%B4%9D%E5%B7%A5%E5%85%B7%E7%B1%BB/1.png" class="">
-<p>逻辑结构如上图，处理方式：</p>
-<ol>
-<li>字段为null或类型被static修饰时，略过此字段。</li>
-<li>字段类型为字面量，字面量包装器，枚举和单例时，直接将此字段赋予副本。</li>
-<li>对其他对象递归调用深拷贝方法。</li>
-</ol>
-<p>同时满足以下两条件的类认为是单例：</p>
-<ul>
-<li><p>所有构造器都为private修饰。</p>
-</li>
-<li><p>有一个为static修饰且类型与本类相同的字段。</p>
-</li>
-</ul>
-<h2 id="代码与测试"><a href="#代码与测试" class="headerlink" title="代码与测试"></a>代码与测试</h2><p>工具类</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.Constructor;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Modifier;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DeepCloneUtil</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">DeepCloneUtil</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 通过反射实现对传入对象的深拷贝。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> originalObj 需要深拷贝的原本。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> &lt;T&gt;         用于指定返回对象的类型。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 深拷贝得到的副本。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">deepClone</span><span class="params">(T originalObj)</span> </span>&#123;</span><br><span class="line">        Class&lt;?&gt; oClass = originalObj.getClass();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Object cloneObj = oClass.newInstance();</span><br><span class="line">            Field[] declaredFields = oClass.getDeclaredFields();</span><br><span class="line">            <span class="keyword">for</span> (Field declaredField : declaredFields) &#123;</span><br><span class="line">                declaredField.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">                Object fieldObj = declaredField.get(originalObj);</span><br><span class="line">                <span class="comment">//  判断原本类的某字段是否为final修饰，或原本的此字段为null。是则跳过此字段，执行下一次循环。</span></span><br><span class="line">                <span class="keyword">if</span> (fieldObj == <span class="keyword">null</span> || Modifier.isFinal(declaredField.getModifiers())) &#123;</span><br><span class="line">                    <span class="keyword">continue</span>;T</span><br><span class="line">                &#125;</span><br><span class="line">                Class&lt;?&gt; fieldType = declaredField.getType();</span><br><span class="line">                <span class="comment">//  判断原本类的某字段类型是否为字面量类型，Boolean，Character，Number的子类，枚举类或单例之一。</span></span><br><span class="line">                <span class="comment">//  是则直接将原本的此字段赋予副本，执行下一次循环。</span></span><br><span class="line">                <span class="keyword">if</span> (fieldType.isPrimitive()</span><br><span class="line">                        || fieldType == String<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span> </span>== Boolean<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span> </span>== Character<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span>.<span class="title">getSuperclass</span>() </span>== Number<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">fieldType</span>.<span class="title">getSuperclass</span>() </span>== Enum<span class="class">.<span class="keyword">class</span></span></span><br><span class="line"><span class="class">                        || <span class="title">isSingleton</span>(<span class="title">fieldType</span>)) </span>&#123;</span><br><span class="line">                    declaredField.set(cloneObj, declaredField.get(originalObj));</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//  对原本的此字段递归调用本方法，再将返回值赋予副本。</span></span><br><span class="line">                declaredField.set(cloneObj, deepClone(fieldObj));</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> ((T) cloneObj);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InstantiationException e) &#123;</span><br><span class="line">            System.err.println(<span class="string">"未能实例化"</span> + oClass.getName() + <span class="string">"类"</span>);</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">            System.err.println(<span class="string">"未能访问副本对象"</span>);</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 判断一个字段类型是否是单例模式。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> fieldType 需要判断的字段类型。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 字段类型为单例模式时返回true，否则返回false。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isSingleton</span><span class="params">(Class&lt;?&gt; fieldType)</span> </span>&#123;</span><br><span class="line">        Constructor&lt;?&gt;[] declaredConstructors = fieldType.getDeclaredConstructors();</span><br><span class="line">        <span class="comment">//  所有构造器都是私有时满足条件之一。</span></span><br><span class="line">        <span class="keyword">boolean</span> constructorsFlag = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">for</span> (Constructor&lt;?&gt; declaredConstructor : declaredConstructors) &#123;</span><br><span class="line">            declaredConstructor.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">if</span> (!Modifier.isPrivate(declaredConstructor.getModifiers())) &#123;</span><br><span class="line">                constructorsFlag = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            constructorsFlag = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//  只要有一个为static修饰且类型与本类相同的字段即满足条件之二。</span></span><br><span class="line">        <span class="keyword">boolean</span> fieldsFlag = <span class="keyword">false</span>;</span><br><span class="line">        Field[] declaredFields = fieldType.getDeclaredFields();</span><br><span class="line">        <span class="keyword">for</span> (Field field : declaredFields) &#123;</span><br><span class="line">            <span class="keyword">if</span> (Modifier.isStatic(field.getModifiers()) &amp;&amp; field.getType() == fieldType) &#123;</span><br><span class="line">                fieldsFlag = <span class="keyword">true</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//  两个条件都满足时返回true。</span></span><br><span class="line">        <span class="keyword">return</span> constructorsFlag &amp;&amp; fieldsFlag;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试用例：</p>
-  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.math.BigDecimal;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用普通类，包含Car实例，SomeThingSingleton单例。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> height;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> weight;</span><br><span class="line">    <span class="keyword">private</span> BigDecimal balance;</span><br><span class="line">    <span class="keyword">private</span> Car car;</span><br><span class="line">    <span class="keyword">private</span> SomeThingSingleton something;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.ToString;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用单例，被Person实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@ToString</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SomeThingSingleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> SomeThingSingleton instance;</span><br><span class="line">    <span class="keyword">private</span> Double dNum;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SomeThingSingleton</span><span class="params">(Double dNum)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.dNum = dNum;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SomeThingSingleton <span class="title">getInstance</span><span class="params">(Double dNum)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (SomeThingSingleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> SomeThingSingleton(dNum);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description:  测试用普通类，其实例被Person实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Car</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer ID;</span><br><span class="line">    <span class="keyword">private</span> CarLicense license;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.AllArgsConstructor;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.NoArgsConstructor;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用普通类，包含枚举类，其实例被Person实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CarLicense</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Character firstName;</span><br><span class="line">    <span class="keyword">private</span> String num;</span><br><span class="line">    <span class="keyword">private</span> LicenseColor color;</span><br><span class="line">    <span class="keyword">private</span> Boolean status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description: 测试用枚举类，其实例被CarLicense实例引用。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> LicenseColor &#123;</span><br><span class="line">    BLUE, GREEN, WHITE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.math.BigDecimal;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: Illuminated Worm</span></span><br><span class="line"><span class="comment"> * version:</span></span><br><span class="line"><span class="comment"> * jdk: 1.8</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        CarLicense thisLicense = <span class="keyword">new</span> CarLicense(<span class="string">'A'</span>, <span class="string">"AS56IO98"</span>, LicenseColor.BLUE, <span class="keyword">true</span>);</span><br><span class="line">        Car thisCar = <span class="keyword">new</span> Car(<span class="string">"卡车"</span>, <span class="number">9849</span>, thisLicense);</span><br><span class="line">        Person thisOne = <span class="keyword">new</span> Person(<span class="string">"张三"</span>, <span class="number">30</span>, <span class="number">185.3</span>, <span class="number">60.1F</span>, BigDecimal.valueOf(<span class="number">1891487.15</span>), thisCar, SomeThingSingleton.getInstance(<span class="number">12.12</span>D));</span><br><span class="line">        Person copyOne = DeepCloneUtil.&lt;Person&gt;deepClone(thisOne);</span><br><span class="line">        <span class="keyword">if</span> (copyOne != <span class="keyword">null</span>) &#123;</span><br><span class="line">            System.out.println(<span class="string">"thisOne:"</span> + thisOne + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"copyOne:"</span> + copyOne + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"copyOne == thisOne :"</span> + (copyOne == thisOne) + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"---经由Lombok重写的equals方法---"</span> + <span class="string">"\n"</span></span><br><span class="line">                    + <span class="string">"copy.equals(thisOne) :"</span> + copyOne.equals(thisOne));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">thisOne:Person(name=张三, age=<span class="number">30</span>, height=<span class="number">185.3</span>, weight=<span class="number">60.1</span>, balance=<span class="number">1891487.15</span>, car=Car(name=卡车, ID=<span class="number">9849</span>, license=CarLicense(firstName=A, num=AS56IO98, color=BLUE, status=<span class="keyword">true</span>)), something=SomeThingSingleton(dNum=<span class="number">12.12</span>))</span><br><span class="line">copyOne:Person(name=张三, age=<span class="number">30</span>, height=<span class="number">185.3</span>, weight=<span class="number">60.1</span>, balance=<span class="number">1891487.15</span>, car=Car(name=卡车, ID=<span class="number">9849</span>, license=CarLicense(firstName=A, num=AS56IO98, color=BLUE, status=<span class="keyword">true</span>)), something=SomeThingSingleton(dNum=<span class="number">12.12</span>))</span><br><span class="line">copyOne == thisOne :<span class="keyword">false</span></span><br><span class="line">---经由Lombok重写的equals方法---</span><br><span class="line">copy.equals(thisOne) :<span class="keyword">true</span></span><br></pre></td></tr></table></figure>
-<p>基本达成需求。</p>
-<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>实际情况中采用这种方式<strong>并不好</strong>，需要深拷贝时继承cloneable接口，或直接视乎具体情况新建对象即可。采用反射的方式虽然有通用性，然而反复执行次数少时反射效率不高，上另两法也便利，这个工具类还是<strong>不用为妙</strong>。</p>
-<p>另外用序列化实现深拷贝<strong>更不可取</strong>，序列化底层同样使用反射实现，并且有大量其他工作。效率与此工具类有数量级差距。</p>
-<p><strong>另外，本例中用于判断单例的逻辑很可能有误处理的风险。毕竟根本上讲，单例是语义现象，而不是语法规定。</strong></p>
 
       
     </div>
