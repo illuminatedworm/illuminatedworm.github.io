@@ -232,7 +232,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-10-11 19:34:06 / 修改时间：21:54:11" itemprop="dateCreated datePublished" datetime="2020-10-11T19:34:06+08:00">2020-10-11</time>
+              <time title="创建时间：2020-10-11 19:34:06 / 修改时间：22:13:42" itemprop="dateCreated datePublished" datetime="2020-10-11T19:34:06+08:00">2020-10-11</time>
             </span>
 
           
@@ -246,7 +246,7 @@
     <div class="post-body" itemprop="articleBody">
           <h2 id="HashMap的奇怪容量设置"><a href="#HashMap的奇怪容量设置" class="headerlink" title="HashMap的奇怪容量设置"></a>HashMap的奇怪容量设置</h2><p>在JDK的<code>HashMap</code>中，它的默认初始容量为16，用户输入的任何初始容量都会被计算为不小于输入的2的整数次幂，在实例发生扩容时也会保持容量为2的整数次幂。</p>
 <p>这是一个比较奇怪的事实。经典书籍《算法导论》中关于散列表的章节是这么说的：</p>
-<p><img src="HashMap容量背后的争论/1.png" style="zoom:65%;" /></p>
+<p><img src="HashMap容量背后的争论/1.png" style="zoom:60%;" /></p>
 <p>《算法导论》认为，当采用除法散列法时，列表表的大小应该选取一个较大的，不接近2的整数次幂的质数，并且应该避免选择2的整数次幂。这个说法符合直觉，并且应该是对的，有许多衍生的分析，比如具体哪些数比较好（碰撞率低而本身又不是非常大）。</p>
 <p>但JDK采用的实现，完全与之相悖，虽然官方并没有作出具体解释，但在<a href="https://docs.oracle.com/javase/tutorial/collections/implementations/set.html" target="_blank" rel="noopener">这个网页</a>里提到：</p>
 <blockquote>
