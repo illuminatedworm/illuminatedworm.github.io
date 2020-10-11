@@ -155,13 +155,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -200,6 +200,96 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/11/HashMap%E5%AE%B9%E9%87%8F%E8%83%8C%E5%90%8E%E7%9A%84%E4%BA%89%E8%AE%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/10/11/HashMap%E5%AE%B9%E9%87%8F%E8%83%8C%E5%90%8E%E7%9A%84%E4%BA%89%E8%AE%BA/" class="post-title-link" itemprop="url">HashMap容量背后的争论</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-11 19:34:06 / 修改时间：21:50:57" itemprop="dateCreated datePublished" datetime="2020-10-11T19:34:06+08:00">2020-10-11</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="HashMap的奇怪容量设置"><a href="#HashMap的奇怪容量设置" class="headerlink" title="HashMap的奇怪容量设置"></a>HashMap的奇怪容量设置</h2><p>在JDK的<code>HashMap</code>中，它的默认初始容量为16，用户输入的任何初始容量都会被计算为不小于输入的2的整数次幂，在实例发生扩容时也会保持容量为2的整数次幂。</p>
+<p>这是一个比较奇怪的事实。经典书籍《算法导论》中关于散列表的章节是这么说的：</p>
+<p><img src="HashMap容量背后的争论/算法导论引用.png" style="zoom:65%;" /></p>
+<p>《算法导论》认为，当采用除法散列法时，列表表的大小应该选取一个较大的，不接近2的整数次幂的质数，并且应该避免选择2的整数次幂。这个说法符合直觉，并且应该是对的，有许多衍生的分析，比如具体哪些数比较好（碰撞率低而本身又不是非常大）。</p>
+<p>但JDK采用的实现，完全与之相悖，虽然官方并没有作出具体解释，但在<a href="https://docs.oracle.com/javase/tutorial/collections/implementations/set.html" target="_blank" rel="noopener">这个网页</a>里提到：</p>
+<blockquote>
+<p>In the past, there was some advantage to choosing a prime number as the initial capacity. This is no longer true. </p>
+<p>（过去，选择质数作为初始容量有一些优势。现在不再如此。）</p>
+</blockquote>
+<h2 id="怎么回事？"><a href="#怎么回事？" class="headerlink" title="怎么回事？"></a>怎么回事？</h2><p>首先，矛盾存在的前提是，<code>HashMap</code>的散列方法也是除法散列法，然而查看源代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> Node&lt;K,V&gt; <span class="title">getNode</span><span class="params">(<span class="keyword">int</span> hash, Object key)</span> </span>&#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; first, e; <span class="keyword">int</span> n; K k;</span><br><span class="line">    <span class="keyword">if</span> ((tab = table) != <span class="keyword">null</span> &amp;&amp; (n = tab.length) &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">        (first = tab[(n - <span class="number">1</span>) &amp; hash]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (first.hash == hash &amp;&amp; <span class="comment">// always check first node</span></span><br><span class="line">            ((k = first.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            <span class="keyword">return</span> first;</span><br><span class="line">        <span class="keyword">if</span> ((e = first.next) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (first <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                <span class="keyword">return</span> ((TreeNode&lt;K,V&gt;)first).getTreeNode(hash, key);</span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                    ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                    <span class="keyword">return</span> e;</span><br><span class="line">            &#125; <span class="keyword">while</span> ((e = e.next) != <span class="keyword">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关键在于<code>(tab = table) != null &amp;&amp; (n = tab.length) &gt; 0 &amp;&amp; (first = tab[(n - 1) &amp; hash]) != null</code>，其实看JDK 7的代码更加简单明白（因为JDK 8中<code>HashMap</code>获得了一些改进，主要是树化机制）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">indexFor</span><span class="params">(<span class="keyword">int</span> h, <span class="keyword">int</span> length)</span> </span>&#123;    </span><br><span class="line">    <span class="keyword">return</span> h &amp; (length-<span class="number">1</span>);    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以JDK的散列方法是<code>h &amp; (length-1)</code>这样一个令人懵逼的位运算，而不是取模。似乎这就是答案了：散列方法不同，没有什么矛盾。位运算更快，所以JDK的做法也可取。</p>
+<p>网上不少分析看起来都是按照这个思路发生的，既然是新方法，那么就找出一些合理性，直接进入喜闻乐见的二进制环节，还能顺便把<code>hash()</code>方法为什么要对哈希值作位运算再与原值作异或运算讲了。</p>
+<p>但很多分析都忽略了一个更直接的事实：<strong><em>当length为2的整数次幂时，hash &amp; (length - 1) = hash % length</em></strong>。并且因此<strong>混淆了<code>hash()</code>和散列方法的意图</strong>。即便这种做法作为一种tricky/hack的位运算技巧流传较广，但我才疏学浅不能解释背后的数学原理。</p>
+<p>总之，JDK采用的散列方法本质仍然是除法散列法，而JDK做出的优化是用特定条件下的等价位运算来提升计算速度，<strong>这个优化并没有回避掉如此容量值产生的高碰撞率问题</strong>。根据<a href="http://blog.teamleadnet.com/2012/07/faster-division-and-modulo-operation.html" target="_blank" rel="noopener">这个博客</a>的说法，此优化提升巨大，高达10-20倍！我相信正是这样数量级的差异令JDK开发者做出了取舍。</p>
+<p>那么JDK开发者又是怎么改善碰撞率的呢？这个的答案才在<code>hash()</code>方法里：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hash</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h;</span><br><span class="line">    <span class="keyword">return</span> (key == <span class="keyword">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法很简单，这里就不像其他方法一样写二进制示例了。hash ^ ( h &gt;&gt;&gt; 16)这个运算的目的用人话来说就是，<strong>将高位“融合进”低位，降低碰撞率</strong>，这包括俩方面：</p>
+<ul>
+<li>当散列表容量length较小时，与新散列值进行运算时，等价于对原散列值的高位敏感。</li>
+<li>均匀散列值的低位排列方式可能性。</li>
+</ul>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>总结一下：</p>
+<ul>
+<li><code>HashMap</code>取桶索引的算法大幅优化了运算速度，本质仍然是除法散列法，没有改善高碰撞率。</li>
+<li>改善高碰撞率的是<code>hash()</code>方法，它将原散列值的高位“融合进”低位。</li>
+</ul>
+<p>所以，《算法导论》仍然是对的，直觉没有被违背。JDK的做法是基于原理论的取舍优化而不是全面舍弃——既保留位运算相对除法的巨大性能提升，又试图解决高碰撞率的问题。</p>
+<p>计算机科学和数学关系莫大，却经常会在实践中超出数学的范畴，JDK的<code>HashMap</code>实现是一个例子，毕竟只从数学角度考虑，位运算和除法并没有什么区别，也不会有什么后续可言。类似的事情还在Dual-Pivot Quicksort这个经典排序算法里发生过，这个算法获得性能提升的关键在于计算机硬件而不是数学分析。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -1250,188 +1340,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/09/%E9%87%8D%E6%B8%A9%E8%A1%A5%E7%A0%81%E5%92%8C%E5%8F%91%E6%83%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="IlluminatedWorm">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="IlluminatedWorm's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/08/09/%E9%87%8D%E6%B8%A9%E8%A1%A5%E7%A0%81%E5%92%8C%E5%8F%91%E6%83%B3/" class="post-title-link" itemprop="url">重温补码和发想</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-08-09 14:27:04" itemprop="dateCreated datePublished" datetime="2020-08-09T14:27:04+08:00">2020-08-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-10 01:25:23" itemprop="dateModified" datetime="2020-08-10T01:25:23+08:00">2020-08-10</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="正负和原码之难"><a href="#正负和原码之难" class="headerlink" title="正负和原码之难"></a>正负和原码之难</h2><p>在计算机中区分正负数有许多好处，此时可以只考虑一个，不用特别设计和实现减法，将减法转换为加法即可：</p>
-<script type="math/tex; mode=display">
-5-3=5+(-3)</script><p>下表展示了3位数中的应用实例。</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center">十进制表示</th>
-<th style="text-align:center">原码</th>
-<th style="text-align:center">补码</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">0</td>
-<td style="text-align:center">000</td>
-<td style="text-align:center">000</td>
-</tr>
-<tr>
-<td style="text-align:center">1</td>
-<td style="text-align:center">001</td>
-<td style="text-align:center">001</td>
-</tr>
-<tr>
-<td style="text-align:center">2</td>
-<td style="text-align:center">010</td>
-<td style="text-align:center">010</td>
-</tr>
-<tr>
-<td style="text-align:center">3</td>
-<td style="text-align:center">011</td>
-<td style="text-align:center">011</td>
-</tr>
-<tr>
-<td style="text-align:center">-4</td>
-<td style="text-align:center">N/A<strong>*</strong></td>
-<td style="text-align:center">100</td>
-</tr>
-<tr>
-<td style="text-align:center">-3</td>
-<td style="text-align:center">111</td>
-<td style="text-align:center">101</td>
-</tr>
-<tr>
-<td style="text-align:center">-2</td>
-<td style="text-align:center">110</td>
-<td style="text-align:center">110</td>
-</tr>
-<tr>
-<td style="text-align:center">-1</td>
-<td style="text-align:center">101</td>
-<td style="text-align:center">111</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>就像为了标明数的正负而在开头添加＋或－一样，用二进制数的第一位表示正负和剩余位数表示值是理所当然的做法。原码第一位作为符号位，0表示负，1则表示正，剩余位数就是原数绝对值的二进制表示。</p>
-<p>数被表示好了，并且能区分正负，接下来当然要进行运算，那么问题出现了：</p>
-<script type="math/tex; mode=display">
-3+(-3)=0\neq010=011+111</script><p>那么该将如何呢？让计算机去根据符号位进行判断大概是最直观的解决，这当然没错。然而需要注意的是，加法在计算机中已经是非常基础的运算，它理应尽可能地简单，否则将严重拖累计算机的性能，之前提到的把减法视作加法也基于这样的原则。带上新条件重新思考，那么摆在脚下的路仍然是让符号位也参与加法运算，所以原码这样的方法是行不通了。</p>
-<h2 id="冯·诺依曼小剧场"><a href="#冯·诺依曼小剧场" class="headerlink" title="冯·诺依曼小剧场"></a>冯·诺依曼小剧场</h2><p>首先重新看回上面的原码运算，<strong>请特别注意在有限的3位数中011+111的结果并不是1010，计算机“丢弃”了超越的进位！进位而位不足便添位在人的认识中是非常自然的，但对于计算机并非如此。这个容易略过的事实十分重要。</strong></p>
-<hr>
-<p>现在请考虑：你是一个认得0~9的十进制思想的人，你只能做加法，你有且只有一位数，不得添也不得去，9+1的结果对于你来说是多少？暂时跳出这个奇怪的身份，当然会知道9+1=10，但此时的你并不能添位，因此10里的1就这么“溢出”了，你丢掉了这个数字，以仅剩下的0作为结果。在有限位数的计算中，一直持续加下去，并不会得到＋∞，而是在有限位数的有限表示中循环：0, 1, 2… 8, 9, 0, 1, 2…</p>
-<p>请再考虑：虽然你只能做加法，却有人需要你做减法，现在轮到这位强人所难的家伙头疼了，他知道不能让你进行8-3这样的运算，既然只能做加法那就做加法，那么8加上什么数才可以呢。他也想起了上面提到的循环，于是他知道了，让你计算8+7的结果便能得到和8-3相同的结果。他决定做一张对照表，把某些类似+7和-3这样成对关联的数对应起来，方便查询。依样画葫芦，他得到了这样一张表：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>他：</th>
-<th>0</th>
-<th>1</th>
-<th>2</th>
-<th>3</th>
-<th>4</th>
-<th>-5</th>
-<th>-4</th>
-<th>-3</th>
-<th>-2</th>
-<th>-1</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>你：</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>4</td>
-<td>5</td>
-<td>6</td>
-<td>7</td>
-<td>8</td>
-<td>9</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>他进一步想到，万一你以后可以支持更多位和更多表示了呢，又重新来一遍不成？要找出这种映射的规律，细细一看，并不难发现：</p>
-<p>  -5+10=5，-4+10=6，-3+10=7……</p>
-<p>原来如此，原值和映射值之和等于10。为什么是10呢，他稍微对更高表示量的情况作了验证，确实这个和就是适逢进位溢出的那个数。</p>
-<h2 id="补码，重整乾坤"><a href="#补码，重整乾坤" class="headerlink" title="补码，重整乾坤"></a>补码，重整乾坤</h2><p>补码，就是一种在计算机中用二进制数表示有正负符号的数的方法。用这种方法处理整数时，正数的补码为其原码，而负数的补码与原码之和为2<sup>N</sup>。 对于二进制数，N位数适逢进位溢出的数就是2<sup>N</sup>。</p>
-<p>约翰·冯·诺依曼当然不会组织这样的小剧场，他倒确实是补码的提案者，而补码的用意就和小剧场里的映射表一样，要将一系列循环表示的前半部分当作正数，后半部分当作负数，这样便同时解决了表示正负，以加代减和令加法简单这整整三个问题。</p>
-<p>你应该已经注意到在第一张表格中，-4只有对应的补码，而原码不适用。这样写当然是不对的。不经修正的原码有这样的缺陷：000和100在原码中严格地看来代表着＋0和－0，但±0对于数学和正常人来说都是没有意义的。为了满足0就是0，指定000就是0而不是什么＋0，那100又如何处置呢，不能指定它就是4，因为第一位数被用来表示正负而不是值，你会发现在原码方法有这样一个叫人万般尴尬的特殊情况——即使强行为负零指定了某个特定的值，也不会有什么额外好处。</p>
-<p>万幸的是在补码中没有这么尴尬，就当100是-4的原码，则-4的补码也是100，所以补码还处理了正负零这第四个问题（如Java中占8位的byte型表示－128~127而不是－127~127，－128~－1和0~127都有128个数），当然在真正使用原码和反码的情况里也是能解决正负零问题的，只是不如补码自洽且利于计算。</p>
-<p>看得出，原码是一种“天真简单的”映射，而补码旨在重排。你可以为它们找出很多联系来绕晕自己，甚至联系反码来进一步绕晕自己，或者把它们看成泾渭分明的三种方法——你完全不需要知道原码也可以使用补码，只需要遵照以下规则：</p>
-<ol>
-<li>使用总数为偶数的一系列循环二进制数。</li>
-<li>将这些表示对半拆开。</li>
-<li>前半部分依次表示0, 1, 2… N。</li>
-<li>后半部分依次表示－(N+1), －(N), －(N-1)… -1。</li>
-</ol>
-<p>你也可以把-3+10=7理解成-3和7对10同模，并提炼出这样的关系：</p>
-<script type="math/tex; mode=display">
-j\equiv(j+k)\pmod{k}</script><p>毕竟：</p>
-<script type="math/tex; mode=display">
-j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很多种的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1499,7 +1407,7 @@ j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很�
 
   
   <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
-<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 
   
 
@@ -1520,57 +1428,6 @@ j\mod{k}=j-k\quad (j\ge k>0)</script><p>表示方法和理解都是可以有很�
   
 
   
-      <script>
-  if (typeof MathJax === 'undefined') {
-    window.MathJax = {
-      loader: {
-        source: {
-          '[tex]/amsCd': '[tex]/amscd',
-          '[tex]/AMScd': '[tex]/amscd'
-        }
-      },
-      tex: {
-        inlineMath: {'[+]': [['$', '$']]},
-        tags: 'ams'
-      },
-      options: {
-        renderActions: {
-          findScript: [10, doc => {
-            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = {node: text, delim: '', n: 0};
-              math.end = {node: text, delim: '', n: 0};
-              doc.math.push(math);
-            });
-          }, '', false],
-          insertedScript: [200, () => {
-            document.querySelectorAll('mjx-container').forEach(node => {
-              const target = node.parentNode;
-              if (target.nodeName.toLowerCase() === 'li') {
-                target.parentNode.classList.add('has-jax');
-              }
-            });
-          }, '', false]
-        }
-      }
-    };
-    (function () {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML';
-      script.defer = true;
-      document.head.appendChild(script);
-    })();
-  } else {
-    MathJax.startup.document.state(0);
-    MathJax.texReset();
-    MathJax.typeset();
-  }
-</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
-
-    
 
   
 
