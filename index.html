@@ -232,7 +232,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-10-11 19:34:06 / 修改时间：22:13:42" itemprop="dateCreated datePublished" datetime="2020-10-11T19:34:06+08:00">2020-10-11</time>
+              <time title="创建时间：2020-10-11 19:34:06 / 修改时间：22:25:50" itemprop="dateCreated datePublished" datetime="2020-10-11T19:34:06+08:00">2020-10-11</time>
             </span>
 
           
@@ -246,7 +246,7 @@
     <div class="post-body" itemprop="articleBody">
           <h2 id="HashMap的奇怪容量设置"><a href="#HashMap的奇怪容量设置" class="headerlink" title="HashMap的奇怪容量设置"></a>HashMap的奇怪容量设置</h2><p>在JDK的<code>HashMap</code>中，它的默认初始容量为16，用户输入的任何初始容量都会被计算为不小于输入的2的整数次幂，在实例发生扩容时也会保持容量为2的整数次幂。</p>
 <p>这是一个比较奇怪的事实。经典书籍《算法导论》中关于散列表的章节是这么说的：</p>
-<p><img src="HashMap容量背后的争论/1.png" style="zoom:60%;" /></p>
+<img src="/2020/10/11/HashMap%E5%AE%B9%E9%87%8F%E8%83%8C%E5%90%8E%E7%9A%84%E4%BA%89%E8%AE%BA/1.png" class="">
 <p>《算法导论》认为，当采用除法散列法时，列表表的大小应该选取一个较大的，不接近2的整数次幂的质数，并且应该避免选择2的整数次幂。这个说法符合直觉，并且应该是对的，有许多衍生的分析，比如具体哪些数比较好（碰撞率低而本身又不是非常大）。</p>
 <p>但JDK采用的实现，完全与之相悖，虽然官方并没有作出具体解释，但在<a href="https://docs.oracle.com/javase/tutorial/collections/implementations/set.html" target="_blank" rel="noopener">这个网页</a>里提到：</p>
 <blockquote>
@@ -328,7 +328,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-02 19:11:03" itemprop="dateModified" datetime="2020-10-02T19:11:03+08:00">2020-10-02</time>
+                <time title="修改时间：2020-10-11 22:27:04" itemprop="dateModified" datetime="2020-10-11T22:27:04+08:00">2020-10-11</time>
               </span>
 
           
@@ -342,7 +342,7 @@
     <div class="post-body" itemprop="articleBody">
           <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在读《Java并发编程实战》，稍微整理一下基础知识。<br>这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。</p>
 <p>在Java中，线程生命周期如下：</p>
-<p><img src="异步与同步，阻塞与非阻塞，并发与并行/Thread.png" style="zoom:75%;" /></p>
+<img src="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/Thread.png" class="">
 <h2 id="并发与并行"><a href="#并发与并行" class="headerlink" title="并发与并行"></a>并发与并行</h2><p>相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。</p>
 <p>借用名著《并发的艺术》的说法：</p>
 <blockquote>
@@ -379,7 +379,7 @@
 <p>这段代码永远依次输出1，2，3，4。“主线程”在输出3之后，才去执行了<code>setTimeout</code>函数（实际上，Java中的<code>Timer</code>类也是这样的，真正的多线程定时任务需要<code>ScheduledThreadPoolExecutor</code>，原生定时任务的实现别再用<code>Timer</code>了）。</p>
 <p>所以声称那是异步编程并不严谨，阻塞和非阻塞这对概念尚且关注的是一个对象的状态，但异步和同步关注的一定是至少两个对象间的关系，故而准确地讲，这应该叫作<em>异步风格编程</em>。它要解决的是程序员心智层面的认知问题，而不是CPU或者操作系统的问题。</p>
 <p>JavaScript的实践中，经常会出现这种情况：这个函数需要那个函数的回调，另一个函数又需要这个函数的回调，甚至那个函数又依赖第四个函数的回调……在<code>promise</code>成为JavaScript官方规范和出现在第三方类库中之前，名为回调地狱的现象困扰着前端程序员，以下是一个夸张而搞笑的示例：</p>
-<p><img src="异步与同步，阻塞与非阻塞，并发与并行/callback hell.jpeg" style="zoom:75%;" /></p>
+<p><img src="异步与同步，阻塞与非阻塞，并发与并行/callback hell.jpeg" alt=""></p>
 <p>这样的代码看起来令人眼疼头疼，难以维护。现在的JavaScript，可以把这样的代码：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">nextStep</span> =&gt;</span> &#123;</span><br><span class="line">  getBeef(<span class="function"><span class="keyword">function</span> (<span class="params">beef</span>) </span>&#123;</span><br><span class="line">    cookBeef(beef, <span class="function"><span class="keyword">function</span> (<span class="params">cookedBeef</span>) </span>&#123;</span><br><span class="line">      getBuns(<span class="function"><span class="keyword">function</span> (<span class="params">buns</span>) </span>&#123;</span><br><span class="line">        putBeefBetweenBuns(buns, beef, <span class="function"><span class="keyword">function</span>(<span class="params">burger</span>) </span>&#123;</span><br><span class="line">          nextStep(burger)</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">makeBurger(<span class="function"><span class="keyword">function</span> (<span class="params">burger</span>) =&gt; </span>&#123;</span><br><span class="line">  serve(burger)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
 <p>变成这样的：</p>
