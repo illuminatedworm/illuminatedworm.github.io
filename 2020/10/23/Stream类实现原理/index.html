@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="参考资料：《Java核心技术 卷二》，JDK8 API doc特别感谢：万能的IntelliJ Idea 前言先看看Stream最重要的一点，执行顺序。示例代码： 12345678910111213141516171819public class PeekThePeekMethod &amp;#123;    public static void main(String[] args) &amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Stream类实现原理">
+<meta property="og:url" content="http://yoursite.com/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
+<meta property="og:description" content="参考资料：《Java核心技术 卷二》，JDK8 API doc特别感谢：万能的IntelliJ Idea 前言先看看Stream最重要的一点，执行顺序。示例代码： 12345678910111213141516171819public class PeekThePeekMethod &amp;#123;    public static void main(String[] args) &amp;#123;">
+<meta property="og:image" content="http://yoursite.com/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/trace.png">
+<meta property="og:image" content="http://yoursite.com/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/overview.png">
+<meta property="og:image" content="http://yoursite.com/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/sink_overview.png">
+<meta property="article:published_time" content="2020-10-23T05:34:41.000Z">
+<meta property="article:modified_time" content="2020-10-23T17:29:28.341Z">
+<meta property="article:author" content="IlluminatedWorm">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="函数式编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/trace.png">
+
+
+<link rel="canonical" href="http://yoursite.com/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Stream类实现原理 | IlluminatedWorm's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">IlluminatedWorm's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对照例子"><span class="nav-number">2.</span> <span class="nav-text">对照例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何记录？"><span class="nav-number">3.</span> <span class="nav-text">如何记录？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#头"><span class="nav-number">3.1.</span> <span class="nav-text">头</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#身"><span class="nav-number">3.2.</span> <span class="nav-text">身</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尾"><span class="nav-number">3.3.</span> <span class="nav-text">尾</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最后"><span class="nav-number">4.</span> <span class="nav-text">最后</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">IlluminatedWorm</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/illuminatedworm" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;illuminatedworm" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:609210163@qq.com" title="E-Mail → mailto:609210163@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Stream类实现原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-23 13:34:41" itemprop="dateCreated datePublished" datetime="2020-10-23T13:34:41+08:00">2020-10-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-24 01:29:28" itemprop="dateModified" datetime="2020-10-24T01:29:28+08:00">2020-10-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>参考资料：《Java核心技术 卷二》，JDK8 API doc<br>特别感谢：万能的IntelliJ Idea</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>先看看<code>Stream</code>最重要的一点，执行顺序。示例代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PeekThePeekMethod</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        List&lt;ValuePair&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        list.add(<span class="keyword">new</span> ValuePair(<span class="number">1</span>, <span class="string">"one"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> ValuePair(<span class="number">2</span>, <span class="string">"two"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> ValuePair(<span class="number">3</span>, <span class="string">"three"</span>));</span><br><span class="line">        list.stream()</span><br><span class="line">                .peek(valuePair -&gt; System.out.println(valuePair.getCode()))</span><br><span class="line">                .peek(valuePair -&gt; System.out.println(valuePair.getName()))</span><br><span class="line">                .forEach(System.out::println);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ValuePair</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">int</span> code;</span><br><span class="line">        <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// constructors, toString, setter and getter</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<blockquote>
+<p>1<br>one<br>ValuePair{code=1, name=’one’}<br>2<br>two<br>ValuePair{code=2, name=’two’}<br>3<br>three<br>ValuePair{code=3, name=’three’}</p>
+</blockquote>
+<p>明显可以看出，stream并不是在每次操作时对包含的每个元素进行遍历，而是只进行了一次遍历，否则每次操作的结果会相邻。</p>
+<p>也就是说，stream的操作等价于：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (ValuePair valuePair : list) &#123;</span><br><span class="line">    System.out.println(valuePair.getCode());</span><br><span class="line">    System.out.println(valuePair.getName());</span><br><span class="line">    System.out.println(valuePair);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而不是：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (ValuePair valuePair : list)</span><br><span class="line">    System.out.println(valuePair.getCode());</span><br><span class="line"><span class="keyword">for</span> (ValuePair valuePair : list)</span><br><span class="line">    System.out.println(valuePair.getName());</span><br><span class="line"><span class="keyword">for</span> (ValuePair valuePair : list)</span><br><span class="line">    System.out.println(valuePair);</span><br></pre></td></tr></table></figure>
+<p><code>Stream</code>和第一种for-each循环的效果符合人类思维的自然预想，剩下的那种显然不对。这里想表达的重点在于，<code>Stream</code>是如何将三个操作压缩到一起执行的呢？稍微想想就能发现，最简单直接的实现方式——转存数据结构，对每个操作方法以循环来实现——达成的效果是三个顺序执行的for-each循环那样的。</p>
+<p>那么要达成预期效果，自然会想到一种方式：<strong>记录</strong>而非执行。将操作记录下来，最终统一执行。更本质地讲，就是将执行<strong>延迟</strong>，这就是为什么<code>Stream</code>类的方法接受的参数都是Lambda表达式（函数式接口），使用Lambda表达式的用意在某种程度上就是要让执行被推后。</p>
+<p>我们完全可以想象（如果熟悉Java中Lambda表达式的实现方式的话，这里就不讲了invokedynamic，<code>MethodHanlder</code>，<code>CallSite</code>和内部类那些事儿了……），这些Lambda表达式都被记录在某个集合里，最终被拿出来遍历执行。</p>
+<h2 id="对照例子"><a href="#对照例子" class="headerlink" title="对照例子"></a>对照例子</h2><p>另一个例子，作为后文的具象参考：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ArrayList&lt;String&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">list.add(<span class="string">"cat"</span>);list.add(<span class="string">"dog"</span>);list.add(<span class="string">"pig"</span>);</span><br><span class="line">list.add(<span class="string">"olIve"</span>);list.add(<span class="string">"pinK"</span>);list.add(<span class="string">"silVer"</span>);</span><br><span class="line">list.stream()</span><br><span class="line">    .filter(s -&gt; s.length() &gt; <span class="number">3</span>)</span><br><span class="line">    .map(s -&gt; s.substring(<span class="number">0</span>, <span class="number">1</span>).toUpperCase() + s.substring(<span class="number">1</span>).toLowerCase())</span><br><span class="line">    .sorted()</span><br><span class="line">    .forEach(System.out::println);</span><br></pre></td></tr></table></figure>
+<p>过程追踪：</p>
+<img src="/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/trace.png" class="">
+<p>输出结果：</p>
+<blockquote>
+<p>Olive<br>Pink<br>Silver</p>
+</blockquote>
+<h2 id="如何记录？"><a href="#如何记录？" class="headerlink" title="如何记录？"></a>如何记录？</h2><p>一张<code>Stream</code>实现的继承关系图：</p>
+<img src="/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/overview.png" class="">
+<p>这当中没有画出对<code>int</code>，<code>long</code>和<code>double</code>特化的类，<strong>但它们存在</strong>。它们的结构也基本为Stream &lt;- Pipleline &lt;- Head+StatefulOp+StatelessOp。因为Java的泛型并不支持原始类型，而使用包装类带来的打包和解包有性能损耗，因此具有这些特化的类。</p>
+<h3 id="头"><a href="#头" class="headerlink" title="头"></a>头</h3><p>对示例代码进行追踪，可以发现<code>list.stream()</code>的作用是：</p>
+<ol>
+<li>获取<code>ArrayList</code>的<code>Spliterator</code>对象（简单地说，就是可并行化的<code>Iterator</code>）。</li>
+<li>将该对象传入<code>ReferencePipeline.Head</code>构造器创建出<code>Head</code>对象。<code>new ReferencePipeline.Head&lt;&gt;(spliterator, StreamOpFlag.fromCharacteristics(spliterator), parallel);</code></li>
+</ol>
+<p>看看这个构造器的签名：<code>Head(Spliterator&lt;?&gt; source, int sourceFlags, boolean parallel)</code>。很简单易懂，<code>Spliterator</code>即数据源，parallel表示是否并行化，在这里为<code>false</code>，sourceFlags是由前文方法以数据源算得的特征值，从<code>StreamOpFlag</code>类的注释中可以知道，这是一个表示多项状态的<code>int</code>值（掩码）：</p>
+<ul>
+<li>DISTINCT 是否独特 （例如，<code>Set</code>是独特的，而<code>List</code>不是）</li>
+<li>SORTED 是否排序（例如，<code>SortedSet</code>是排序的，而<code>ArrayList</code>不是）</li>
+<li>ORDERED 是否有序（例如，<code>ArrayList</code>是有序的，而<code>HashMap</code>不是）</li>
+<li>SIZED 已知或未知大小（<code>Stream</code>支持无限流）</li>
+</ul>
+<p>我们并不关心特征码的具体情况，我们只需要知道，<code>Stream</code>记录了这些信息，留待后用。</p>
+<p>最终<code>Head</code>对象的实际创建落到<code>AbstractPipeline</code>的代码中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">AbstractPipeline(Spliterator&lt;?&gt; source,</span><br><span class="line">                 <span class="keyword">int</span> sourceFlags, <span class="keyword">boolean</span> parallel) &#123;</span><br><span class="line">    <span class="keyword">this</span>.previousStage = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">this</span>.sourceSpliterator = source;</span><br><span class="line">    <span class="keyword">this</span>.sourceStage = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">this</span>.sourceOrOpFlags = sourceFlags &amp; StreamOpFlag.STREAM_MASK;</span><br><span class="line">    <span class="comment">// The following is an optimization of:</span></span><br><span class="line">    <span class="comment">// StreamOpFlag.combineOpFlags(sourceOrOpFlags, StreamOpFlag.INITIAL_OPS_VALUE);</span></span><br><span class="line">    <span class="keyword">this</span>.combinedFlags = (~(sourceOrOpFlags &lt;&lt; <span class="number">1</span>)) &amp; StreamOpFlag.INITIAL_OPS_VALUE;</span><br><span class="line">    <span class="keyword">this</span>.depth = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">this</span>.parallel = parallel;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一个典型的链表单元，包含着相关信息，并且是头——指向的前单元为<code>null</code>。</p>
+<h3 id="身"><a href="#身" class="headerlink" title="身"></a>身</h3><p>追踪<code>filter()</code>方法，发现与头的处理类似，实现代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Stream&lt;P_OUT&gt; <span class="title">filter</span><span class="params">(Predicate&lt;? <span class="keyword">super</span> P_OUT&gt; predicate)</span> </span>&#123;</span><br><span class="line">    Objects.requireNonNull(predicate);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> StatelessOp&lt;P_OUT, P_OUT&gt;(<span class="keyword">this</span>, StreamShape.REFERENCE,</span><br><span class="line">                                 StreamOpFlag.NOT_SIZED) &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function">Sink&lt;P_OUT&gt; <span class="title">opWrapSink</span><span class="params">(<span class="keyword">int</span> flags, Sink&lt;P_OUT&gt; sink)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Sink.ChainedReference&lt;P_OUT, P_OUT&gt;(sink) &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">begin</span><span class="params">(<span class="keyword">long</span> size)</span> </span>&#123;</span><br><span class="line">                    downstream.begin(-<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">accept</span><span class="params">(P_OUT u)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">if</span> (predicate.test(u))</span><br><span class="line">                        downstream.accept(u);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这两层重写建立了一个具有定制的<code>opWrapSink()</code>方法的<code>StatelessOp</code>对象，该方法能返回一个定制的<code>Sink.ChainedReference</code>对象。<code>Sink</code>是扩展的<code>Cosumer</code>接口：</p>
+<img src="/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/sink_overview.png" class="">
+<p>这些方法的目的大致如下：</p>
+<ul>
+<li><code>begin()</code>，最先触发，重置<code>Sink</code>状态以接受新数据。与流大小变化有关，这上面的例子中，传入参数-1表示后续流大小未知或无限。</li>
+<li><code>accept()</code>，当前处理步骤。</li>
+<li><code>cancellationRequested()</code>，表示该步骤不再接受任何数据。与短路/非短路操作有关。</li>
+<li><code>end()</code>，最后触发，已接受完所有数据。与有状态/无状态操作有关。</li>
+</ul>
+<p>创建<code>StatelessOp</code>的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">AbstractPipeline(AbstractPipeline&lt;?, E_IN, ?&gt; previousStage, <span class="keyword">int</span> opFlags) &#123;</span><br><span class="line">    <span class="keyword">if</span> (previousStage.linkedOrConsumed)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(MSG_STREAM_LINKED);</span><br><span class="line">    previousStage.linkedOrConsumed = <span class="keyword">true</span>;</span><br><span class="line">    previousStage.nextStage = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>.previousStage = previousStage;</span><br><span class="line">    <span class="keyword">this</span>.sourceOrOpFlags = opFlags &amp; StreamOpFlag.OP_MASK;</span><br><span class="line">    <span class="keyword">this</span>.combinedFlags = StreamOpFlag.combineOpFlags(opFlags, previousStage.combinedFlags);</span><br><span class="line">    <span class="keyword">this</span>.sourceStage = previousStage.sourceStage;</span><br><span class="line">    <span class="keyword">if</span> (opIsStateful())</span><br><span class="line">        sourceStage.sourceAnyStateful = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">this</span>.depth = previousStage.depth + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>更加清晰了，能看出代码在制造双向链表。</p>
+<p><code>StatefulOp</code>的相关代码更加复杂，就不展示出来撑爆这篇博客的长度了，总体思路和<code>statelessOp</code>是相同的，最大的区别是<code>StatefulOp</code>中的<code>end()</code>方法经过了复杂的重写，因为有状态的操作依赖上一次操作的结果，所以需要在<code>end()</code>中执行处理。</p>
+<h3 id="尾"><a href="#尾" class="headerlink" title="尾"></a>尾</h3><p>结束方法并没有与之前的链表链接，而是从链表尾遍历到头，完成翻转的打包，再进行执行，对于<code>forEach()</code>方法，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> &lt;P_IN&gt; <span class="function">Sink&lt;P_IN&gt; <span class="title">wrapSink</span><span class="params">(Sink&lt;E_OUT&gt; sink)</span> </span>&#123;</span><br><span class="line">    Objects.requireNonNull(sink);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ( <span class="meta">@SuppressWarnings</span>(<span class="string">"rawtypes"</span>) AbstractPipeline p=AbstractPipeline.<span class="keyword">this</span>; p.depth &gt; <span class="number">0</span>; p=p.previousStage) &#123;</span><br><span class="line">        sink = p.opWrapSink(p.previousStage.combinedFlags, sink);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (Sink&lt;P_IN&gt;) sink;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> &lt;P_IN&gt; <span class="function"><span class="keyword">void</span> <span class="title">copyInto</span><span class="params">(Sink&lt;P_IN&gt; wrappedSink, Spliterator&lt;P_IN&gt; spliterator)</span> </span>&#123;</span><br><span class="line">    Objects.requireNonNull(wrappedSink);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!StreamOpFlag.SHORT_CIRCUIT.isKnown(getStreamAndOpFlags())) &#123;</span><br><span class="line">        wrappedSink.begin(spliterator.getExactSizeIfKnown());</span><br><span class="line">        spliterator.forEachRemaining(wrappedSink);</span><br><span class="line">        wrappedSink.end();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        copyIntoWithCancel(wrappedSink, spliterator);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里用<code>forEach()</code>方法举例的原因就是相比其他结束方法相对简单……</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>虽然<code>Stream</code>的使用非常直观简单，但其具体实现可以说很是令人头晕目眩，即使抛掉流那些用于检验判断的元信息和其传递过程来看，也得在繁多的多态关系间检索。</p>
+<p>不得不承认针对面向对象编程抽象过度的批评是有道理的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+              <a href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag"># 函数式编程</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/10/11/HashMap%E5%AE%B9%E9%87%8F%E8%83%8C%E5%90%8E%E7%9A%84%E4%BA%89%E8%AE%BA/" rel="prev" title="HashMap容量背后的争论">
+                  <i class="fa fa-chevron-left"></i> HashMap容量背后的争论
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">IlluminatedWorm</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+      
+
+
+
+
+
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -24,13 +24,13 @@
 
   <meta property="og:type" content="website">
 <meta property="og:title" content="IlluminatedWorm&#39;s Blog">
-<meta property="og:url" content="http://yoursite.com/tags/Java/index.html">
+<meta property="og:url" content="http://yoursite.com/tags/java/index.html">
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
 <meta property="article:author" content="IlluminatedWorm">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="http://yoursite.com/tags/Java/">
+<link rel="canonical" href="http://yoursite.com/tags/java/">
 
 
 <script class="page-configurations">
@@ -43,7 +43,7 @@
   };
 </script>
 
-  <title>标签: Java | IlluminatedWorm's Blog</title>
+  <title>标签: java | IlluminatedWorm's Blog</title>
   
 
 
@@ -155,13 +155,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -207,7 +207,7 @@
   <div class="post-block">
     <div class="posts-collapse">
       <div class="collection-title">
-        <h2 class="collection-header">Java
+        <h2 class="collection-header">java
           <small>标签</small>
         </h2>
       </div>
@@ -221,15 +221,15 @@
     <header class="post-header">
       <div class="post-meta">
         <time itemprop="dateCreated"
-              datetime="2020-10-11T19:34:06+08:00"
-              content="2020-10-11">
-          10-11
+              datetime="2020-10-23T13:34:41+08:00"
+              content="2020-10-23">
+          10-23
         </time>
       </div>
 
       <div class="post-title">
-          <a class="post-title-link" href="/2020/10/11/HashMap%E5%AE%B9%E9%87%8F%E8%83%8C%E5%90%8E%E7%9A%84%E4%BA%89%E8%AE%BA/" itemprop="url">
-            <span itemprop="name">HashMap容量背后的争论</span>
+          <a class="post-title-link" href="/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" itemprop="url">
+            <span itemprop="name">Stream类实现原理</span>
           </a>
       </div>
 
@@ -237,57 +237,102 @@
     </header>
   </article>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-10-01T22:04:05+08:00"
-              content="2020-10-01">
-          10-01
-        </time>
-      </div>
+    </div>
+  </div>
+  
+  
+  
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/" itemprop="url">
-            <span itemprop="name">异步与同步，阻塞与非阻塞，并发与并行</span>
-          </a>
-      </div>
+  
+
+
 
       
-    </header>
-  </article>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-09-26T23:07:42+08:00"
-              content="2020-09-26">
-          09-26
-        </time>
-      </div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/09/26/%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8B%E4%B8%8Ecome-from/" itemprop="url">
-            <span itemprop="name">面向切面编程与come from</span>
-          </a>
-      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
 
       
-    </header>
-  </article>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-09-17T12:29:21+08:00"
-              content="2020-09-17">
-          09-17
-        </time>
-      </div>
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">IlluminatedWorm</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
 
-      <div class="post-title">
+      
+
+
+
+
+
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
+"post-title">
           <a class="post-title-link" href="/2020/09/17/%E9%87%8D%E6%96%B0%E6%A2%B3%E7%90%86%E6%B3%9B%E5%9E%8B/" itemprop="url">
             <span itemprop="name">重新梳理泛型</span>
           </a>
