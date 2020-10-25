@@ -366,7 +366,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-12 12:25:21" itemprop="dateModified" datetime="2020-10-12T12:25:21+08:00">2020-10-12</time>
+                <time title="修改时间：2020-10-25 15:22:43" itemprop="dateModified" datetime="2020-10-25T15:22:43+08:00">2020-10-25</time>
               </span>
 
           
@@ -402,6 +402,7 @@
 <li>避免散列表容量较小的情况下（16位及以内，0 ~ 65535，显然，这是最常见的情况），运算时对散列值高位不敏感。</li>
 <li>提高散列值低位分布方式的均匀程度。</li>
 </ul>
+<p>以上过程看待数字的角度在十进制和二进制之间切换而没有说明，因为这样写非常冗杂，但应该意识到这一点。</p>
 <h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>总结一下：</p>
 <ul>
 <li><code>HashMap</code>取桶索引的算法大幅优化了运算速度，本质仍然是除法散列法，没有改善高碰撞率。</li>
@@ -462,7 +463,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-13 21:57:37" itemprop="dateModified" datetime="2020-10-13T21:57:37+08:00">2020-10-13</time>
+                <time title="修改时间：2020-10-25 16:05:57" itemprop="dateModified" datetime="2020-10-25T16:05:57+08:00">2020-10-25</time>
               </span>
 
           
@@ -488,7 +489,7 @@
 <p>并行一定是指运行在多核处理器的计算机上的情况，多个线程被分配到不同的处理器内核上，真正的同时运行。</p>
 <p>可以得出一些强化认识的推论：</p>
 <ul>
-<li>并行是并发的真子集。</li>
+<li>并行是并发的真子集（但在通常的语境下，并发所指的是不包含并行的那部分，应该意识到这一点。）。</li>
 <li>对于单线程，这两个概念没有意义（Java程序肯定是多线程的——至少包括一个主线程和一个GC线程）。</li>
 <li>在单核处理器的计算机上运行多线程程序一定是并发的。</li>
 </ul>
@@ -507,10 +508,10 @@
 <p>许多Java程序员轻视JavaScript，以至于对<code>promise</code>对象所知甚少，但人人都见过这种写法：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func(f)</span><br><span class="line">.then(f1)</span><br><span class="line">.catch(e1)</span><br><span class="line">.then(f2)</span><br><span class="line">.catch(e2)</span><br></pre></td></tr></table></figure>
 <p>它的抽象概念是，调用某个函数，如果它有成功的结果，调用f1，否则是失败的结果，调用e1，f1和e1又可能有成功和失败的结果，类似地，根据情况分别再调用f2和e2。</p>
-<p>这就是JavaScript的异步编程，可以时常看到前端程序员津津乐道它，与<code>async</code>和<code>awiat</code>关键词一并提及，声称这是异步编程的最佳解决方案（尽管这对关键词先出现在C#中）。</p>
+<p>这就是JavaScript的异步编程，可以时常看到前端程序员津津乐道它，与<code>async</code>和<code>await</code>关键词一并提及，声称这是异步编程的最佳解决方案（尽管这对关键词先出现在C#中）。</p>
 <p>但运行在某个浏览器中的JavaScript的代码总是阻塞的，JavaScript中根本没有线程概念，但它实际就是单线程的。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'1'</span>);</span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'2'</span>);</span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'4'</span>);</span><br><span class="line">    &#125;, <span class="number">0</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'3'</span>);</span><br></pre></td></tr></table></figure>
-<p>这段代码永远依次输出1，2，3，4。“主线程”在输出3之后，才去执行了<code>setTimeout</code>函数（实际上，Java中的<code>Timer</code>类也是这样的，真正的多线程定时任务需要<code>ScheduledThreadPoolExecutor</code>，原生定时任务的实现别再用<code>Timer</code>了）。</p>
+<p>这段代码永远依次输出1，2，3，4。“主线程”在输出3之后，才去执行了<code>setTimeout</code>函数（实际上，JDK中的<code>Timer</code>类也是这样的，真正的多线程定时任务需要<code>ScheduledThreadPoolExecutor</code>，原生定时任务的实现别再用<code>Timer</code>了）。</p>
 <p>所以声称那是异步编程并不严谨，阻塞和非阻塞这对概念尚且关注的是一个对象的状态，但异步和同步关注的一定是至少两个对象间的关系，故而准确地讲，这应该叫作<em>异步风格编程</em>。它要解决的是程序员心智层面的认知问题，而不是CPU或者操作系统的问题。</p>
 <p>JavaScript的实践中，经常会出现这种情况：这个函数需要那个函数的回调，另一个函数又需要这个函数的回调，甚至那个函数又依赖第四个函数的回调……在<code>promise</code>成为JavaScript官方规范和出现在第三方类库中之前，名为回调地狱的现象困扰着前端程序员，以下是一个夸张而搞笑的示例：</p>
 <img src="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/callback_hell.jpeg" class="">
@@ -520,14 +521,18 @@
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> getBeef()</span><br><span class="line">    .then(<span class="function"><span class="params">beef</span> =&gt;</span> cookBeef(beef))</span><br><span class="line">    .then(<span class="function"><span class="params">cookedBeef</span> =&gt;</span> getBuns(beef))</span><br><span class="line">    .then(<span class="function"><span class="params">bunsAndBeef</span> =&gt;</span> putBeefBetweenBuns(bunsAndBeef));</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(<span class="function"><span class="params">burger</span> =&gt;</span> serve(burger));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 利用单参数函数的优势省略箭头函数的形式:</span></span><br><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> getBeef()</span><br><span class="line">    .then(cookBeef)</span><br><span class="line">    .then(getBuns)</span><br><span class="line">    .then(putBeefBetweenBuns);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(serve);</span><br></pre></td></tr></table></figure>
 <p>甚至是这样的（ES6的generator也可以做到，在此不举例）：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> beef = <span class="keyword">await</span> getBeef();</span><br><span class="line">  <span class="keyword">const</span> cookedBeef = <span class="keyword">await</span> cookBeef(beef);</span><br><span class="line">  <span class="keyword">const</span> buns = <span class="keyword">await</span> getBuns();</span><br><span class="line">  <span class="keyword">const</span> burger = <span class="keyword">await</span> putBeefBetweenBuns(cookedBeef, buns);</span><br><span class="line">  <span class="keyword">return</span> burger;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(serve);</span><br></pre></td></tr></table></figure>
-<p>虽然每一行代码对应的具体<code>promise</code>对象的实现还是要落到程序员自己头上（所以还是那句话，没有什么魔法），但最终呈现的效果确实更清晰易读了。异步编程就是这样，只是一种风格，把有问题的实现方式换了一种实现方式（麻烦程度究竟有没有降低很难说，前端程序员中也有其他声音）。</p>
-<p>JDK中也有着<code>promise</code>的等价物，即<code>CompetableFuture&lt;T&gt;</code>类，最本质的不同还是在于多线程，此类下的某些方法允许程序员将任务丢给其他线程执行。另外，<code>Collection</code>接口和<code>BaseStream</code>接口中分别提供了<code>parallelStream()</code>和<code>parallel()</code>方法，可以很方便地把原本的数据源并行化（这个说法是由方法名而来的，其实参考第一小节的结论，说是并发化更严谨），最终效果类似<code>async</code>和<code>await</code>关键词：写的是同步代码，执行却不是。</p>
+<p>虽然每一行代码对应的具体<code>promise</code>对象的实现还是要落到程序员自己头上（所以还是那句话，没有什么魔法），但最终呈现的效果确实更清晰易读了，把有问题的实现方式换了一种实现方式（麻烦程度究竟有没有降低很难说，前端程序员中也有其他声音）。</p>
+<p>JDK中也有着<code>promise</code>的等价物，即<code>CompletableFuture&lt;T&gt;</code>类，最本质的不同还是在于多线程，此类下的某些方法允许程序员将任务丢给其他线程执行。另外，<code>Collection</code>接口和<code>BaseStream</code>接口中分别提供了<code>parallelStream()</code>和<code>parallel()</code>方法，可以很方便地把原本的数据源并行化（这个说法是由方法名而来的，其实参考第一小节的结论，说是并发化更严谨），最终效果类似<code>async</code>和<code>await</code>关键词：写的是同步代码，执行却不是。</p>
+<h3 id="协程，纤程，Project-Loom"><a href="#协程，纤程，Project-Loom" class="headerlink" title="协程，纤程，Project Loom"></a>协程，纤程，Project Loom</h3><p>除了这些解决方案，还有一个领域，即协程/纤程（coroutine/fiber）。同样的，这两个东西都是较基础的概念，具体实现是五花八门的。</p>
+<p>就JVM语言来说，Kotlin中已经有了底层实现为线程池的协程（至少，Kotlin/JVM是如此限于语法层面的“协程”），而Java的Project Loom正在开发的纤程试图在JVM层面建立<strong>轻量级虚拟线程</strong>，以解决Java线程过于沉重而不够灵便的问题（与内核线程一比一相关，联系太紧密）。</p>
+<img src="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/fiber.png" class="">
+<p>说白了，就是类似Go那样。</p>
 <h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>说到这一步，我们会发现，如果不按具体层次讨论，标题中的三对概念就会变得格外混乱，根本无从议起。</p>
 <p>难道JavaScript的异步编程只是个肤浅的称呼吗？它切实地解决了一些心智负担问题。</p>
 <p>难道并行流就不能在单核处理器的计算机上运行吗？当然可以。</p>
 <p>程序员能确保并行代码一定在真正并行吗？这似乎主要是JVM，操作系统和硬件的事情，程序员仅仅提供了并行代码。</p>
 <p>这些术语的使用有严格的界定吗？看看并行流和异步编程。</p>
-<p>异步一定比同步好吗？阻塞一定比非阻塞好吗？并发一定比并行好吗？多线程一定比单线程好吗？这些问题只有一个确定而非常无聊的答案，根据实际情况而定。</p>
+<p>异步一定比同步好吗？非阻塞一定比阻塞好吗？并行一定比并发好吗？多线程一定比单线程好吗？这些问题只有一个确定而非常无聊的答案，根据实际情况而定。</p>
 <p>没有什么魔法，不会因为几个概念的提出和辨明就能解决复杂的问题，问题永远会在那里，甚至不止一个。</p>
 
       
@@ -668,7 +673,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-15 01:07:25" itemprop="dateModified" datetime="2020-10-15T01:07:25+08:00">2020-10-15</time>
+                <time title="修改时间：2020-10-25 15:20:33" itemprop="dateModified" datetime="2020-10-25T15:20:33+08:00">2020-10-25</time>
               </span>
 
           
@@ -709,9 +714,9 @@
 <p>以上种种烦恼在今天看来是不可思议的，甚至是荒唐的，这要归功于泛型。</p>
 <h2 id="2-泛型是什么，有什么用"><a href="#2-泛型是什么，有什么用" class="headerlink" title="2 泛型是什么，有什么用"></a>2 泛型是什么，有什么用</h2><p>非常简单，泛型就是把对象类型当作参数一样可输入，介绍给编译器，让编译器去考虑它，将上述的问题从运行时“降低”到了编译时，任何程序员都知道，如果程序非要出错不可，编译时错误总好过运行时错误。在IDE的帮助下，甚至不需要等到真正编译的时候就能解决。</p>
 <p>泛型的种种“复杂”都是为了确保这份美好愿景而衍生出的状况。</p>
-<h2 id="3-泛型不是什么"><a href="#3-泛型不是什么" class="headerlink" title="3 泛型不是什么"></a>3 泛型不是什么</h2><p>谨记泛型只能保持到编译时（其实这个说法不够严谨，不过现在不关心反射那方面的事），为了保证它如你所愿的实现，编译器针对泛型做了名为“类型擦除”的一系列工作。</p>
+<h2 id="3-泛型不是什么"><a href="#3-泛型不是什么" class="headerlink" title="3 泛型不是什么"></a>3 泛型不是什么</h2><p>谨记泛型只能保持到编译时（其实这个说法不够严谨，在运行时记录并利用泛型信息是可以做到的，Guava和一些序列化类库就这么做了。不过现在不关心反射那方面的事），为了保证它如你所愿的实现，编译器针对泛型做了名为“类型擦除”的一系列工作。</p>
 <p>Java的泛型常常被拿来和C++的<code>Template</code>类作比较，C++的<code>Template</code>类会真正的产生不同类型，而在Java中<code>ArrayList&lt;String&gt;</code>和<code>ArrayList&lt;Integer&gt;</code>严格地讲并不存在，这两个泛型类的表达依赖与原生的<code>ArrayList&lt;T&gt;</code>间的一种映射关系。</p>
-<h2 id="4-类型擦除到底做了些什么"><a href="#4-类型擦除到底做了些什么" class="headerlink" title="4 类型擦除到底做了些什么"></a>4 类型擦除到底做了些什么</h2><p>为了将参数化类型映射到原本的类型，Java编译器进行了类型擦除。经常可以在网上看到像是“Java的泛型只是半吊子，它其实被类型擦除了”这样的说法，这样的说法在某种程度上是有道理的，参数化类型和原生类型的映射关系比起C++的模板类确实显得比较“脆弱”（参数化多态的问题水其实挺深的……）。</p>
+<h2 id="4-类型擦除到底做了些什么"><a href="#4-类型擦除到底做了些什么" class="headerlink" title="4 类型擦除到底做了些什么"></a>4 类型擦除到底做了些什么</h2><p>为了将参数化类型映射到原本的类型，Java编译器进行了类型擦除。经常可以在网上看到像是“Java的泛型只是半吊子，它其实被类型擦除了”这样的说法，这样的说法在某种程度上是有道理的，参数化类型和原生类型的映射关系比起C++的模板类确实显得比较“脆弱”（参数化多态的问题水其实挺深的，对于Java只能期待Project Valhalla早日落成吧）。</p>
 <p>类型擦除做了以下工作：</p>
 <ol>
 <li>将所有类型形参替换成指定的界限，如果没有指定界限则替换为<code>Object</code>。（所以没有像C++模板类实例化时那样真正的许多“参数化类型”存在）</li>
@@ -722,7 +727,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> T data;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(T data)</span> </span>&#123; <span class="keyword">this</span>.data = data; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(T data)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Node.setData"</span>);</span><br><span class="line">        <span class="keyword">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyNode</span> <span class="keyword">extends</span> <span class="title">Node</span>&lt;<span class="title">Integer</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyNode</span><span class="params">(Integer data)</span> </span>&#123; <span class="keyword">super</span>(data); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Integer data)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"MyNode.setData"</span>);</span><br><span class="line">        <span class="keyword">super</span>.setData(data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>使用代码：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MyNode mn = <span class="keyword">new</span> MyNode(<span class="number">5</span>);</span><br><span class="line">Node n = mn;            <span class="comment">// 使用参数化类型的原生形式，编译器抛出unchecked警告</span></span><br><span class="line">n.setData(<span class="string">"Hello"</span>);     </span><br><span class="line">Integer x = mn.data;</span><br></pre></td></tr></table></figure>
-<p>使用代码被执行类型擦除后：</p>
+<p>使用代码被执行“类型擦除”后：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MyNode mn = <span class="keyword">new</span> MyNode(<span class="number">5</span>);</span><br><span class="line">Node n = (MyNode)mn;         <span class="comment">// 使用参数化类型的原生形式，编译器抛出unchecked警告</span></span><br><span class="line">n.setData(<span class="string">"Hello"</span>);</span><br><span class="line">Integer x = (String)mn.data;</span><br></pre></td></tr></table></figure>
 <p>这样的使用毫无疑问是错误的，即使“参数化类型”并不存在，也不应该把<code>MyNode</code>实例声明为原生的<code>Node</code>类型，只是在继承时声明<code>Node&lt;Integer&gt;</code>是不行的。</p>
 <p>异常<code>ClassCastException</code>于<code>n.setData(&quot;Hello&quot;)</code>这一行被抛出，而不是<code>Integer x = (String)mn.data</code>，这好像有点奇怪，<code>MyNode</code>中只有<code>setData(Integer)</code>，可代码确实通过编译并且被运行了，甚至抛出了一个异常。</p>
@@ -731,19 +736,19 @@
 <p>有什么不对劲，看似<code>MyNode</code>通过扩展<code>Node&lt;Integer&gt;</code>重写了<code>setData()</code>方法，实际上在类型擦除后，<code>Node</code>和<code>MyNode</code>中却分别出现了两个方法签名并不相同的方法<code>setData(Object)</code>和<code>setData(Integer)</code>，这不是重写（Override）而是重载（Overload），多态似乎被破坏了。为了确保多态，编译器在<code>MyNode</code>中生成了桥接方法：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Object data)</span> </span>&#123;</span><br><span class="line">    setData((Integer) data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>真正完成重写的方法是这个桥接方法，它连接超类方法和“重写方法”以确保多态，现在我们完全清楚地知道了为什么<code>n.setData(&quot;Hello&quot;)</code>可以通过编译并运行，最终还导致了<code>ClassCastException</code>，因为<code>MyNode</code>中确实有相应的方法。</p>
-<h2 id="5-泛型的局限"><a href="#5-泛型的局限" class="headerlink" title="5 泛型的局限"></a>5 泛型的局限</h2><p>Oracle的用例非常巧妙，它既可以警示不当用法，还能借此令用户理解泛型。使用参数化类型的原生类型容易导致错误，这种错误是很容易意识到的，但它还有另一些不那么直观的不当用法。</p>
+<h2 id="5-泛型的局限"><a href="#5-泛型的局限" class="headerlink" title="5 泛型的局限"></a>5 泛型的局限</h2><p>Oracle的用例非常巧妙，它既可以警示不当用法，还能借此令用户理解泛型。使用参数化类型的原生类型容易导致错误，这种错误是很容易意识到的，但它还有另一些不那么直观的不当用法（再次提一下其他参数化多态，比如，以下这些限制在C#中都是不存在的，而Java的Project Valhalla正试图解决5.1中的问题）。</p>
 <h3 id="5-1-基本类型不能作为类型参数"><a href="#5-1-基本类型不能作为类型参数" class="headerlink" title="5.1 基本类型不能作为类型参数"></a>5.1 基本类型不能作为类型参数</h3><p>显然，基本类型不能被赋予声明为<code>Object</code>的变量，注意“字面量类型”和“基本类型”是有区别的，<code>String</code>可以作为参数化类型。解决方法也很简单，使用基本类型对应的包装类：<code>Integer</code>，<code>Long</code>等。但是要谨记，在处理大量数据时自动装箱和拆箱会导致明显的性能问题，JDK中有许多出于此考虑而专门针对基本类型的实现类，而不是简单地仅提供一个泛型类。</p>
 <h3 id="5-2-不能用new-T-来创建实例"><a href="#5-2-不能用new-T-来创建实例" class="headerlink" title="5.2 不能用new T()来创建实例"></a>5.2 不能用new T()来创建实例</h3><p><code>Integer integer = new T()</code>在被执行类型擦除后会是<code>Integer integer = new Object()</code>，这肯定行不通。只能对传入的对象使用反射寻找构造器来创建。很不幸，泛型不能帮你省去编写反射代码的痛苦。</p>
-<h3 id="5-3-不能用new-T-来创建数组"><a href="#5-3-不能用new-T-来创建数组" class="headerlink" title="5.3 不能用new T[]来创建数组"></a>5.3 不能用new T[]来创建数组</h3><p><code>T[] array = new T[1]</code>实际上是<code>Object[] array = new Object[0]</code>，这样就能放入任意对象，这明显有问题，最终Java决定完全拒绝这么做，用泛型创建数组会抛出编译错误。仍然需要对传入的对象使用反射，具体方法是<code>java.lang.reflect.Array.newInstance()</code>。</p>
+<h3 id="5-3-不能用new-T-来创建数组"><a href="#5-3-不能用new-T-来创建数组" class="headerlink" title="5.3 不能用new T[]来创建数组"></a>5.3 不能用new T[]来创建数组</h3><p><code>T[] array = new T[1]</code>实际上是<code>Object[] array = new Object[0]</code>，这样就能放入任何对象，这明显有问题，最终Java决定完全拒绝这么做，用泛型创建数组会抛出编译错误。仍然需要对传入的对象使用反射，具体方法是<code>java.lang.reflect.Array.newInstance()</code>。</p>
 <h3 id="5-4-不能创建参数化类型的数组"><a href="#5-4-不能创建参数化类型的数组" class="headerlink" title="5.4 不能创建参数化类型的数组"></a>5.4 不能创建参数化类型的数组</h3><p>类似上一点，这也是彻底不被允许的，<code>new Node&lt;Integer&gt;[1]</code>将不能通过编译。只能使用<code>Collection</code>来存储参数化类型，如<code>ArrayList&lt;Node&lt;Integer&gt;&gt;</code>。</p>
 <h3 id="5-5-Varargs警告"><a href="#5-5-Varargs警告" class="headerlink" title="5.5 Varargs警告"></a>5.5 Varargs警告</h3><p>可变参数其实是以数组形式传入的，如果可变参数带有类型参数，就需要创建参数化类型的数组，不同于上一点，Java决定允许这么做，因为最常见的情况是只会从中读取元素，这么做不会有问题，可以放心地打上@SafeVarargs压制警告。但试图往当中添加或修改元素仍然是错误的。</p>
-<h3 id="5-6-不能用类型形参进行类型检测和转化"><a href="#5-6-不能用类型形参进行类型检测和转化" class="headerlink" title="5.6 不能用类型形参进行类型检测和转化"></a>5.6 不能用类型形参进行类型检测和转化</h3><p>类似的考虑，Java完全拒绝这种意味不明的做法，<code>obj instanceof Node&lt;Integer&gt;</code>和<code>Node&lt;Integer&gt;obj</code>这样的语句都会抛出编译错误。</p>
+<h3 id="5-6-不能用类型形参进行类型检测和转换"><a href="#5-6-不能用类型形参进行类型检测和转换" class="headerlink" title="5.6 不能用类型形参进行类型检测和转换"></a>5.6 不能用类型形参进行类型检测和转换</h3><p>类似的考虑，Java完全拒绝这种意味不明的做法，<code>obj instanceof Node&lt;Integer&gt;</code>和<code>Node&lt;Integer&gt;obj</code>这样的语句都会抛出编译错误。</p>
 <h3 id="5-6-静态字段和方法中不能引用类型变量"><a href="#5-6-静态字段和方法中不能引用类型变量" class="headerlink" title="5.6 静态字段和方法中不能引用类型变量"></a>5.6 静态字段和方法中不能引用类型变量</h3><p><code>static</code>代表着，这是属于类级别的成员，静态字段和静态方法将在所有实例之间共享，不同参数化类型的实例明显不能共享同一份静态成员，因此Java不允许这么做。</p>
 <h3 id="5-7-不能捕获和抛出参数化类型的实例"><a href="#5-7-不能捕获和抛出参数化类型的实例" class="headerlink" title="5.7 不能捕获和抛出参数化类型的实例"></a>5.7 不能捕获和抛出参数化类型的实例</h3><p><code>catch (T e)</code>无论如何都是不行的，即使类型参数被声明为<code>T extends Throwable</code>也一样。为什么这样设计似乎有点似是而非，并且据我所知，Oracle官方并没有对此给出过解答，同时似乎也没有什么权威书籍做过什么论断。<strong>因此以下是未经任何认证的个人猜测，至少存在这种情况，如果允许捕获参数化类型的实例，代码会在编译后产生错误顺序的<code>catch</code>子句：</strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        method0();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (T e) &#123;<span class="comment">// 如果允许这么做，那么没理由拒绝编译这样的代码</span></span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 类型擦除后</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        method0();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;<span class="comment">// 错误，IOExcpetion已被捕获</span></span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>参数化类型也不能实现<code>Throwable</code>，因为异常可以持有引发自身的另一个异常，允许参数化类型实现<code>Throwable</code>可能导致类似的错误。</p>
 <p><strong>请注意</strong>，所谓的抛出是指<code>throw</code>而不是<code>throws</code>，在中文语境中非常容易忽略这一点！后者可以声明适当的类型参数。</p>
-<p>用泛型能对异常处理做出一些意想不到的操作，《Java核心技术 卷一》就提到过一种欺骗编译器某个检查型异常是运行时异常的操作，借以突破<code>Runnable</code>接口中的<code>run()</code>方法不允许抛出检查型异常的限制（显然，各种函数式接口也可以被这么做）。</p>
+<p>用泛型能对异常处理做出一些意想不到的操作，《Java核心技术 卷一》就提到过一种欺骗编译器某个检查型异常是运行时异常的操作，借以突破<code>Runnable</code>接口中的<code>run()</code>方法不允许抛出检查型异常的限制（显然，各种函数式接口也可以被这么做，或者，直接使用Apache Common中的可失败的函数式接口）。</p>
 <p>在异常处理中使用泛型很难说有什么优势，却显然会导致混乱，这种做法或许应该彻底避免。</p>
 <h3 id="5-8-小心潜在的方法签名冲突"><a href="#5-8-小心潜在的方法签名冲突" class="headerlink" title="5.8 小心潜在的方法签名冲突"></a>5.8 小心潜在的方法签名冲突</h3><p>由于类型擦除会改变方法签名，桥接方法会增加新方法，因此不能编写与之冲突的方法，有时潜在冲突不太明显，比如重写<code>Object</code>中的方法（其中的方法形参很多都是<code>Object</code>类）或复杂的继承情况。</p>
 <h2 id="6-通配符，限定，PECS"><a href="#6-通配符，限定，PECS" class="headerlink" title="6 通配符，限定，PECS"></a>6 通配符，限定，PECS</h2><p>这里不会解释什么是不变性，协变性和逆变性，不过仍然需要了解这样的一个事实：</p>
@@ -760,7 +765,7 @@
 <li>T既是消费者又是产出者，就用T</li>
 </ul>
 </blockquote>
-<p>其实，PECS称得上是原则，几乎总是应该服从这三条规则。</p>
+<p>其实，PECS称得上是原则，几乎总是应该执行这三条规则。</p>
 <h3 id="6-1-T，U，R，E，N，K，V和"><a href="#6-1-T，U，R，E，N，K，V和" class="headerlink" title="6.1 T，U，R，E，N，K，V和?"></a>6.1 T，U，R，E，N，K，V和?</h3><p>首先明确，只要是字母，就没有本质区别，不同的字母只是命名约定，出于解释和区分的考虑。可以在同一个作用域中声明多个类型参数，而<code>T</code>，<code>U</code>代表的意思是第一个类型参数和第二个类型参数，<code>T</code>来自Type，而<code>U</code>大概是因为在键盘上离T键近。<code>R</code>通常代表返回值。<code>E</code>代表Element，常见于<code>Collection</code>。<code>N</code>代表数字。<code>K</code>和<code>V</code>代表Key和Value，常见于<code>Map</code>。</p>
 <p><code>?</code>则和字母有着真正的区别，在上文中，我用斜体加粗黑字标明了一些形容词，<strong><em>某个</em></strong>和<strong><em>所有</em></strong>形容了它们之间的区别，<code>?</code>并不匹配特定的类型，之所以会用<code>T</code>，是因为会再次用到这个类型，而用<code>?</code>是因为想指代多个，可以说，这两者间其实没有联系……</p>
 <p>现在回到开头提到的<code>static &lt;T,U extends Comparable&lt;? super U&gt; Comparator&lt;T&gt; comparing(Function&lt;? super T,? extends U&gt; keyExtractor)</code>，终于能看懂了，它的类型参数列表的抽象概念是，“声明了两个类型参数，一个无限定，一个限定是实现了针对自身及其<strong><em>所有</em></strong>超类的<code>Comparable</code>接口”，而形参类型也符合PECS——<code>Function</code>函数式接口接受一个值（消费者），返回一个值（产出者）。</p>
@@ -1079,7 +1084,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-19 13:28:30" itemprop="dateModified" datetime="2020-09-19T13:28:30+08:00">2020-09-19</time>
+                <time title="修改时间：2020-10-25 15:08:13" itemprop="dateModified" datetime="2020-10-25T15:08:13+08:00">2020-10-25</time>
               </span>
 
           
@@ -1114,7 +1119,7 @@
 <p>Annotation pointcut success.</p>
 <p>method m1 triggered.<br>Your input: Hello Annotation!</p>
 </blockquote>
-<h2 id="2-流程小结，通知注释鉴别"><a href="#2-流程小结，通知注释鉴别" class="headerlink" title="2 流程小结，通知注释鉴别"></a>2 流程小结，通知注释鉴别</h2><p>将Contoller，Service和DAO等关键对象交给Spring管理，再辅以AspectJ，对于使用者来说，从亲手实现动态代理和在各处用代理对象替换被代理对象中解放出来，控制反转让施行真正的面向切面编程成为现实。（要注意的是SpringAOP采用的这种实现方式并不是唯一的，如AspectJ本身是在编译时通过专用编译器生成字节码来实现的）</p>
+<h2 id="2-流程小结，通知注释鉴别"><a href="#2-流程小结，通知注释鉴别" class="headerlink" title="2 流程小结，通知注释鉴别"></a>2 流程小结，通知注释鉴别</h2><p>将Contoller，Service和DAO等关键对象交给Spring管理，对于使用者来说，从亲手实现代理和在各处用代理对象替换被代理对象中解放出来，控制反转让施行真正的面向切面编程成为现实。（要注意的是SpringAOP采用的这种实现方式并不是唯一的，如AspectJ本身是在编译时通过专用编译器生成字节码来实现的）</p>
 <p>需要声明切面，创建一个类，注释以<code>Aspect</code>并将其注入Spring。</p>
 <p>然后建立空方法，以<code>@Pointcut</code>注释来声明需要切入处，主要方式有：</p>
 <ol>

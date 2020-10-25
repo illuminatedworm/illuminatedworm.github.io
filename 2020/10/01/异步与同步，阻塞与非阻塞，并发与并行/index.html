@@ -30,8 +30,9 @@
 <meta property="og:description" content="前言最近在读《Java并发编程实战》，稍微整理一下基础知识。这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。 在Java中，线程生命周期如下：  并发与并行相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。 借用名著《并发的艺术》的说法：  A system is said to be concurrent if it can supp">
 <meta property="og:image" content="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/Thread.png">
 <meta property="og:image" content="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/callback_hell.jpeg">
+<meta property="og:image" content="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/fiber.png">
 <meta property="article:published_time" content="2020-10-01T14:04:05.000Z">
-<meta property="article:modified_time" content="2020-10-13T13:57:37.278Z">
+<meta property="article:modified_time" content="2020-10-25T08:05:57.859Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="JavaScript">
@@ -153,7 +154,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#并发与并行"><span class="nav-number">2.</span> <span class="nav-text">并发与并行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#阻塞与非阻塞"><span class="nav-number">3.</span> <span class="nav-text">阻塞与非阻塞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异步与同步"><span class="nav-number">4.</span> <span class="nav-text">异步与同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最后"><span class="nav-number">5.</span> <span class="nav-text">最后</span></a></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#并发与并行"><span class="nav-number">2.</span> <span class="nav-text">并发与并行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#阻塞与非阻塞"><span class="nav-number">3.</span> <span class="nav-text">阻塞与非阻塞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异步与同步"><span class="nav-number">4.</span> <span class="nav-text">异步与同步</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#协程，纤程，Project-Loom"><span class="nav-number">4.1.</span> <span class="nav-text">协程，纤程，Project Loom</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最后"><span class="nav-number">5.</span> <span class="nav-text">最后</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -249,7 +250,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-13 21:57:37" itemprop="dateModified" datetime="2020-10-13T21:57:37+08:00">2020-10-13</time>
+                <time title="修改时间：2020-10-25 16:05:57" itemprop="dateModified" datetime="2020-10-25T16:05:57+08:00">2020-10-25</time>
               </span>
 
           
@@ -275,7 +276,7 @@
 <p>并行一定是指运行在多核处理器的计算机上的情况，多个线程被分配到不同的处理器内核上，真正的同时运行。</p>
 <p>可以得出一些强化认识的推论：</p>
 <ul>
-<li>并行是并发的真子集。</li>
+<li>并行是并发的真子集（但在通常的语境下，并发所指的是不包含并行的那部分，应该意识到这一点。）。</li>
 <li>对于单线程，这两个概念没有意义（Java程序肯定是多线程的——至少包括一个主线程和一个GC线程）。</li>
 <li>在单核处理器的计算机上运行多线程程序一定是并发的。</li>
 </ul>
@@ -294,10 +295,10 @@
 <p>许多Java程序员轻视JavaScript，以至于对<code>promise</code>对象所知甚少，但人人都见过这种写法：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func(f)</span><br><span class="line">.then(f1)</span><br><span class="line">.catch(e1)</span><br><span class="line">.then(f2)</span><br><span class="line">.catch(e2)</span><br></pre></td></tr></table></figure>
 <p>它的抽象概念是，调用某个函数，如果它有成功的结果，调用f1，否则是失败的结果，调用e1，f1和e1又可能有成功和失败的结果，类似地，根据情况分别再调用f2和e2。</p>
-<p>这就是JavaScript的异步编程，可以时常看到前端程序员津津乐道它，与<code>async</code>和<code>awiat</code>关键词一并提及，声称这是异步编程的最佳解决方案（尽管这对关键词先出现在C#中）。</p>
+<p>这就是JavaScript的异步编程，可以时常看到前端程序员津津乐道它，与<code>async</code>和<code>await</code>关键词一并提及，声称这是异步编程的最佳解决方案（尽管这对关键词先出现在C#中）。</p>
 <p>但运行在某个浏览器中的JavaScript的代码总是阻塞的，JavaScript中根本没有线程概念，但它实际就是单线程的。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'1'</span>);</span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'2'</span>);</span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'4'</span>);</span><br><span class="line">    &#125;, <span class="number">0</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'3'</span>);</span><br></pre></td></tr></table></figure>
-<p>这段代码永远依次输出1，2，3，4。“主线程”在输出3之后，才去执行了<code>setTimeout</code>函数（实际上，Java中的<code>Timer</code>类也是这样的，真正的多线程定时任务需要<code>ScheduledThreadPoolExecutor</code>，原生定时任务的实现别再用<code>Timer</code>了）。</p>
+<p>这段代码永远依次输出1，2，3，4。“主线程”在输出3之后，才去执行了<code>setTimeout</code>函数（实际上，JDK中的<code>Timer</code>类也是这样的，真正的多线程定时任务需要<code>ScheduledThreadPoolExecutor</code>，原生定时任务的实现别再用<code>Timer</code>了）。</p>
 <p>所以声称那是异步编程并不严谨，阻塞和非阻塞这对概念尚且关注的是一个对象的状态，但异步和同步关注的一定是至少两个对象间的关系，故而准确地讲，这应该叫作<em>异步风格编程</em>。它要解决的是程序员心智层面的认知问题，而不是CPU或者操作系统的问题。</p>
 <p>JavaScript的实践中，经常会出现这种情况：这个函数需要那个函数的回调，另一个函数又需要这个函数的回调，甚至那个函数又依赖第四个函数的回调……在<code>promise</code>成为JavaScript官方规范和出现在第三方类库中之前，名为回调地狱的现象困扰着前端程序员，以下是一个夸张而搞笑的示例：</p>
 <img src="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/callback_hell.jpeg" class="">
@@ -307,14 +308,18 @@
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> getBeef()</span><br><span class="line">    .then(<span class="function"><span class="params">beef</span> =&gt;</span> cookBeef(beef))</span><br><span class="line">    .then(<span class="function"><span class="params">cookedBeef</span> =&gt;</span> getBuns(beef))</span><br><span class="line">    .then(<span class="function"><span class="params">bunsAndBeef</span> =&gt;</span> putBeefBetweenBuns(bunsAndBeef));</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(<span class="function"><span class="params">burger</span> =&gt;</span> serve(burger));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 利用单参数函数的优势省略箭头函数的形式:</span></span><br><span class="line"><span class="keyword">const</span> makeBurger = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> getBeef()</span><br><span class="line">    .then(cookBeef)</span><br><span class="line">    .then(getBuns)</span><br><span class="line">    .then(putBeefBetweenBuns);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(serve);</span><br></pre></td></tr></table></figure>
 <p>甚至是这样的（ES6的generator也可以做到，在此不举例）：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> beef = <span class="keyword">await</span> getBeef();</span><br><span class="line">  <span class="keyword">const</span> cookedBeef = <span class="keyword">await</span> cookBeef(beef);</span><br><span class="line">  <span class="keyword">const</span> buns = <span class="keyword">await</span> getBuns();</span><br><span class="line">  <span class="keyword">const</span> burger = <span class="keyword">await</span> putBeefBetweenBuns(cookedBeef, buns);</span><br><span class="line">  <span class="keyword">return</span> burger;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(serve);</span><br></pre></td></tr></table></figure>
-<p>虽然每一行代码对应的具体<code>promise</code>对象的实现还是要落到程序员自己头上（所以还是那句话，没有什么魔法），但最终呈现的效果确实更清晰易读了。异步编程就是这样，只是一种风格，把有问题的实现方式换了一种实现方式（麻烦程度究竟有没有降低很难说，前端程序员中也有其他声音）。</p>
-<p>JDK中也有着<code>promise</code>的等价物，即<code>CompetableFuture&lt;T&gt;</code>类，最本质的不同还是在于多线程，此类下的某些方法允许程序员将任务丢给其他线程执行。另外，<code>Collection</code>接口和<code>BaseStream</code>接口中分别提供了<code>parallelStream()</code>和<code>parallel()</code>方法，可以很方便地把原本的数据源并行化（这个说法是由方法名而来的，其实参考第一小节的结论，说是并发化更严谨），最终效果类似<code>async</code>和<code>await</code>关键词：写的是同步代码，执行却不是。</p>
+<p>虽然每一行代码对应的具体<code>promise</code>对象的实现还是要落到程序员自己头上（所以还是那句话，没有什么魔法），但最终呈现的效果确实更清晰易读了，把有问题的实现方式换了一种实现方式（麻烦程度究竟有没有降低很难说，前端程序员中也有其他声音）。</p>
+<p>JDK中也有着<code>promise</code>的等价物，即<code>CompletableFuture&lt;T&gt;</code>类，最本质的不同还是在于多线程，此类下的某些方法允许程序员将任务丢给其他线程执行。另外，<code>Collection</code>接口和<code>BaseStream</code>接口中分别提供了<code>parallelStream()</code>和<code>parallel()</code>方法，可以很方便地把原本的数据源并行化（这个说法是由方法名而来的，其实参考第一小节的结论，说是并发化更严谨），最终效果类似<code>async</code>和<code>await</code>关键词：写的是同步代码，执行却不是。</p>
+<h3 id="协程，纤程，Project-Loom"><a href="#协程，纤程，Project-Loom" class="headerlink" title="协程，纤程，Project Loom"></a>协程，纤程，Project Loom</h3><p>除了这些解决方案，还有一个领域，即协程/纤程（coroutine/fiber）。同样的，这两个东西都是较基础的概念，具体实现是五花八门的。</p>
+<p>就JVM语言来说，Kotlin中已经有了底层实现为线程池的协程（至少，Kotlin/JVM是如此限于语法层面的“协程”），而Java的Project Loom正在开发的纤程试图在JVM层面建立<strong>轻量级虚拟线程</strong>，以解决Java线程过于沉重而不够灵便的问题（与内核线程一比一相关，联系太紧密）。</p>
+<img src="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/fiber.png" class="">
+<p>说白了，就是类似Go那样。</p>
 <h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>说到这一步，我们会发现，如果不按具体层次讨论，标题中的三对概念就会变得格外混乱，根本无从议起。</p>
 <p>难道JavaScript的异步编程只是个肤浅的称呼吗？它切实地解决了一些心智负担问题。</p>
 <p>难道并行流就不能在单核处理器的计算机上运行吗？当然可以。</p>
 <p>程序员能确保并行代码一定在真正并行吗？这似乎主要是JVM，操作系统和硬件的事情，程序员仅仅提供了并行代码。</p>
 <p>这些术语的使用有严格的界定吗？看看并行流和异步编程。</p>
-<p>异步一定比同步好吗？阻塞一定比非阻塞好吗？并发一定比并行好吗？多线程一定比单线程好吗？这些问题只有一个确定而非常无聊的答案，根据实际情况而定。</p>
+<p>异步一定比同步好吗？非阻塞一定比阻塞好吗？并行一定比并发好吗？多线程一定比单线程好吗？这些问题只有一个确定而非常无聊的答案，根据实际情况而定。</p>
 <p>没有什么魔法，不会因为几个概念的提出和辨明就能解决复杂的问题，问题永远会在那里，甚至不止一个。</p>
 
     </div>
