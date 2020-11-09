@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="本文涉及关键词inline，noinline，crossinline，还会顺便提一下Lambda表达式里的返回值和reified。 对于内联，其中noinline和crossinline两个关键词，即使你不知就里，在IDE的提示下仍可以正确使用。 为什么有inlineKotlin的一大特点是主张使用高阶函数配合函数类型建立高可用的自定义结构进行编程，这样有助于控制流程高抽象化和提高代码复用。所谓的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="inline的二三事">
+<meta property="og:url" content="http://yoursite.com/2020/11/09/inline%E7%9A%84%E4%BA%8C%E4%B8%89%E4%BA%8B/index.html">
+<meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
+<meta property="og:description" content="本文涉及关键词inline，noinline，crossinline，还会顺便提一下Lambda表达式里的返回值和reified。 对于内联，其中noinline和crossinline两个关键词，即使你不知就里，在IDE的提示下仍可以正确使用。 为什么有inlineKotlin的一大特点是主张使用高阶函数配合函数类型建立高可用的自定义结构进行编程，这样有助于控制流程高抽象化和提高代码复用。所谓的">
+<meta property="article:published_time" content="2020-11-09T11:38:08.000Z">
+<meta property="article:modified_time" content="2020-11-09T14:27:55.654Z">
+<meta property="article:author" content="IlluminatedWorm">
+<meta property="article:tag" content="Kotlin">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://yoursite.com/2020/11/09/inline%E7%9A%84%E4%BA%8C%E4%B8%89%E4%BA%8B/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>inline的二三事 | IlluminatedWorm's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">IlluminatedWorm's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么有inline"><span class="nav-number">1.</span> <span class="nav-text">为什么有inline</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#noinline？"><span class="nav-number">2.</span> <span class="nav-text">noinline？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kotlin的Lambda好像不能写return？"><span class="nav-number">3.</span> <span class="nav-text">Kotlin的Lambda好像不能写return？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#crossinline又是怎么回事？"><span class="nav-number">4.</span> <span class="nav-text">crossinline又是怎么回事？</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">IlluminatedWorm</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/illuminatedworm" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;illuminatedworm" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:609210163@qq.com" title="E-Mail → mailto:609210163@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/09/inline%E7%9A%84%E4%BA%8C%E4%B8%89%E4%BA%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          inline的二三事
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-11-09 19:38:08 / 修改时间：22:27:55" itemprop="dateCreated datePublished" datetime="2020-11-09T19:38:08+08:00">2020-11-09</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>本文涉及关键词<code>inline</code>，<code>noinline</code>，<code>crossinline</code>，还会顺便提一下Lambda表达式里的返回值和<code>reified</code>。</p>
+<p>对于内联，其中<code>noinline</code>和<code>crossinline</code>两个关键词，即使你不知就里，在IDE的提示下仍可以正确使用。</p>
+<h2 id="为什么有inline"><a href="#为什么有inline" class="headerlink" title="为什么有inline"></a>为什么有inline</h2><p>Kotlin的一大特点是主张使用高阶函数配合函数类型建立高可用的自定义结构进行编程，这样有助于控制流程高抽象化和提高代码复用。所谓的高阶函数是指以函数为参数或者返回值的函数（这个概念来自数学，如果你把求导和积分也看作函数，那么你会发现它们的参数和结果都可能是另一个函数）。</p>
+<p>然而和Java一样，Kotlin中的函数实际上也不能作为参数传递，被传递的东西<strong>最终本质</strong>上是一个对象（“函数类型”不是“函数”，<code>mehtod()</code>和<code>(::method)()</code>在底层发生了不同的事）。那么这便引申出一个问题，对象的创建是有代价的，这份代价虽然小，但也绝非没有，如果一个高阶函数被频繁调用——例如在一个执行很多次的循环体里被调用——会怎么样呢？</p>
+<p>是的，这可能导致大量的对象被创建，造成显著的性能问题。Kotlin需要提供一种简单且显著的解决方法，所以<code>inline</code>便诞生了。</p>
+<p>如果具有C++背景将非常容易理解什么是内联（inline），这个词的核心表示是<strong><em>替换</em></strong>，你向编译器<strong>推荐</strong>用被内联物的内容代替被内联物。Java中没有内联（可能的内联只会发生在运行时JVM的自主优化，这对程序员是完全透明的），Java中最接近的是编译器对编译时常量的优化：如果一个字面量类型变量的值在编译时已知。那么对它的引用将会被替换为值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String USER_APPLICATION_NAME = <span class="string">"project-user"</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">List&lt;InstanceInfo&gt; instances = discoveryClient.getInstances(USER_APPLICATION_NAME);</span><br></pre></td></tr></table></figure>
+<p>像这样的代码，编译器便会把<code>getInstances()</code>方法的参数从对<code>USER_APPLICATION_NAME</code>的引用替换为<code>&quot;project-user&quot;</code>。</p>
+<p>这就是内联，只不过在Kotlin中的，编译器做的更多，它为你把函数调用替换成了被调用函数里的代码，并且做了一些保证最终效果一致性的工作（顺便一提，在Kotlin中调用内联函数时传入<code>++i</code>和<code>i++</code>这种参数不会产生C++的经典Bug）。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    saySth(<span class="string">"Kotlin"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">saySth</span><span class="params">(s: <span class="type">String</span>)</span></span> &#123;</span><br><span class="line">    println(<span class="string">"Hello, <span class="variable">$s</span>"</span>)</span><br><span class="line">    println(<span class="string">"I`m a inline function, <span class="variable">$s</span>"</span>)</span><br><span class="line">    println(<span class="string">"Goodbye, <span class="variable">$s</span>"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上代码在编译后大致是这样的：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    println(<span class="string">"Hello, Kotlin"</span>)</span><br><span class="line">    println(<span class="string">"I`m a inline function, Kotlin"</span>)</span><br><span class="line">    println(<span class="string">"Goodbye, Kotlin"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">saySth</span><span class="params">(s: <span class="type">String</span>)</span></span> &#123;</span><br><span class="line">    println(<span class="string">"Hello, <span class="variable">$s</span>"</span>)</span><br><span class="line">    println(<span class="string">"I`m a inline function, <span class="variable">$s</span>"</span>)</span><br><span class="line">    println(<span class="string">"Goodbye, <span class="variable">$s</span>"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这只是一个用于说明的简单例子，实际上如果真的这么做，IDE会提示你，这么做起不到优化作用，因此没有必要添加<code>inline</code>，它应该被用在函数参数有函数类型的情况下。这种提示的强烈暗示加上之前关于对象创建的代价问题（当然，你可以去看字节码来完全证实），已经可以摸到<code>inline</code>更主要的目的：把函数类型的参数也进行内联。没有什么参数传递了，也没有对象被创建了，直接跑原本的代码吧。</p>
+<p>现在远非万事大吉，引入<code>inline</code>解决了一个问题，但又引发了另一些问题（喜闻乐见的环节）。即使在上面这个十分简单的说明用例里，你也可以发现代码变多了，内联函数会导致字节码膨胀，这不但会让最终打包的文件容量变大，还可能影响运行效率（毕竟，需要运行的代码变多了），违背<code>inline</code>被引入的初衷。所以IDE才会有那个提示，告知你只有高阶函数才适合内联化，其实这也并不足够，程序员应当小心掂量，只对频繁被调用的高阶函数进行内联化，但这劳累心智，某些情况下也不现实（如果你写的是类库，你怎么肯定使用者的用法？）。</p>
+<h2 id="noinline？"><a href="#noinline？" class="headerlink" title="noinline？"></a>noinline？</h2><p>这个关键词字面意思看起来挺明白的，意思就是不要内联化，那怎么的又需要非内联化呢？</p>
+<p>在上面已经说过，高阶函数能以函数作为返回值，而就像函数其实不能作为参数一样，函数其实也不能作为返回值，在Kotlin中返回函数也是返回了一个对象，这个函数类型的对象和函数并不是一个东西。</p>
+<p>而编译器对内联化函数的函数类型的参数也执行了内联，现在没有什么函数类型了，只剩下最纯洁朴素的等价代码块，显然代码块不能被返回。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> aFunction = saySth(<span class="string">"Kotlin"</span>) &#123;</span><br><span class="line">        println(<span class="string">"Hello, <span class="variable">$it</span>"</span>)</span><br><span class="line">        println(<span class="string">"I`m a inline function, <span class="variable">$it</span>"</span>)</span><br><span class="line">        println(<span class="string">"Goodbye, <span class="variable">$it</span>"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">saySth</span><span class="params">(s: <span class="type">String</span>, f: (<span class="type">String</span>) -&gt; <span class="type">Unit</span>)</span></span>: (String) -&gt; <span class="built_in">Unit</span> &#123;</span><br><span class="line">    f(s)</span><br><span class="line">    <span class="keyword">return</span> f <span class="comment">// 错误</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>IDE直接就提示了：</p>
+<blockquote>
+<p>Illegal usage of inline-parameter ‘f’ in ‘public inline fun saySth(s: String, f: (String) -&gt; Unit): Unit defined in root package in file main.kt’. Add ‘noinline’ modifier to the parameter declaration</p>
+</blockquote>
+<p>只要给参数<code>f: (String) -&gt; Unit</code>加上<code>noinline</code>前缀，就可以成功编译并运行了。如果你真的这么做，你会发现IDE又提示<code>inline</code>不被建议了，因为这个说明用例里只有一个函数类型的参数。显然<code>noinline</code>的使用场景是：在至少有两个函数类型的参数的内联化高阶函数中，需要返回某一个函数类型的参数，就给它加上<code>noinline</code>。不用记着，IDE和编译器会让你正确的。</p>
+<h2 id="Kotlin的Lambda好像不能写return？"><a href="#Kotlin的Lambda好像不能写return？" class="headerlink" title="Kotlin的Lambda好像不能写return？"></a>Kotlin的Lambda好像不能写return？</h2><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">getSaySth</span><span class="params">()</span></span>: String &#123;</span><br><span class="line">    saySth(<span class="string">"Kotlin"</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">""" // 错误</span></span><br><span class="line"><span class="string">            Hello, <span class="variable">$it</span></span></span><br><span class="line"><span class="string">            I`m a inline function, <span class="variable">$it</span></span></span><br><span class="line"><span class="string">            Goodbye,<span class="variable">$it</span></span></span><br><span class="line"><span class="string">        """</span>.trimIndent()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"no thing to said."</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">saySth</span><span class="params">(s: <span class="type">String</span>, f: (<span class="type">String</span>) -&gt; <span class="type">String</span>)</span></span> &#123;</span><br><span class="line">    f(s)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    println(getSaySth())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>考虑这个代码，Lambda表达式中的<code>return</code>究竟返回到哪个函数？是<code>saySth()</code>还是<code>main()</code>，有点意味不明，而Kotlin选择不允许这么做（当然你可以使用带标签的<code>return@saySth</code>），你或许觉得同样的事情在Java中被允许而在Kotlin中重新规定有点可笑，但得记住，在Kotlin里Lambda表达式有更多玩法，例如在类型安全的构建器里出现<code>return</code>就明显不合适。在Kotlin中，Lambda表达式默认以最后一行代码为返回值。</p>
+<p>但只要你见过的Kotlin代码够多，你或许见过能写<code>return</code>的Lambda表达式。是的，内联函数的函数类型参数就允许被写<code>return</code>，因为内联化破坏了被调用函数的作用域，联系第一小节的例子，你就能明白，Lambda表达式里的<code>return</code>已经很明白地指向<code>getSaySth()</code>了，对<code>saySth()</code>的调用已经消失了。</p>
+<p>所以只要给<code>saySth()</code>加上<code>inline</code>修饰符，以上代码就能成功编译和运行，并输出“Hello……”的文本。</p>
+<p>我认为这是Kotlin中过度设计的一点，虽然一切最终符合Kotlin的设计哲学（简单易用：你不需要知道一个高阶函数是否内联来判断是否可以在Lambda表达式中使用<code>return</code>，但只要能使用<code>return</code>你就知道这个函数是内联的），但内联化高阶函数的<code>return</code>被搞得如此复杂，在带标签的<code>return</code>存在的前提下，这真的有必要吗？</p>
+<h2 id="crossinline又是怎么回事？"><a href="#crossinline又是怎么回事？" class="headerlink" title="crossinline又是怎么回事？"></a>crossinline又是怎么回事？</h2><p>记住关于Lambda表达式中<code>return</code>的问题，考虑以下代码：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">suspend</span> <span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">saySth</span><span class="params">(s: <span class="type">String</span>, f: (<span class="type">String</span>) -&gt; <span class="type">Unit</span>)</span></span> &#123;</span><br><span class="line">    withContext(Dispatchers.Default) &#123;</span><br><span class="line">        f(s) <span class="comment">// 错误</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> = runBlocking &#123;</span><br><span class="line">    saySth(<span class="string">"Kotlin"</span>) &#123;</span><br><span class="line">        <span class="keyword">val</span> str = <span class="string">"""</span></span><br><span class="line"><span class="string">            Hello, <span class="variable">$it</span></span></span><br><span class="line"><span class="string">            I`m a inline function, <span class="variable">$it</span></span></span><br><span class="line"><span class="string">            Goodbye,<span class="variable">$it</span></span></span><br><span class="line"><span class="string">        """</span>.trimIndent()</span><br><span class="line">        println(str)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为什么不能编译呢，IDE这样说：</p>
+<blockquote>
+<p>Can’t inline ‘f’ here: it may contain non-local returns. Add ‘crossinline’ modifier to parameter declaration ‘f’</p>
+</blockquote>
+<p>和<code>noinline</code>一样，你不需要搞明白为什么，依提示加上<code>crossinline</code>即可。但现在看提示再联系返回值的问题，你就会明白，对<code>f(s)</code>的调用并不是由<code>saySth()</code>发起的，甚至都不是在本线程被调用，它被交给了某个协程来调用。如果<code>f(s)</code>会返回，那返回到谁呢，显然上一小节提到的处理不适合这种情况，毕竟它都在别的协程里被调用了！并且你可以看到，在这个例子里<code>f</code>的返回值是<code>Unit</code>也不会例外。</p>
+<p>所以就需要<code>crossinline</code>来允许和优化这种特别的调用（哇，发现了吗，Kotlin能帮你在不同线程间较安全地传递变量，而至于我们，别说写异步代码了，基本上什么也不用做，除了加一个关键词！）。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Kotlin/" rel="tag"># Kotlin</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" rel="prev" title="Stream类实现原理">
+                  <i class="fa fa-chevron-left"></i> Stream类实现原理
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">IlluminatedWorm</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+      
+
+
+
+
+
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
