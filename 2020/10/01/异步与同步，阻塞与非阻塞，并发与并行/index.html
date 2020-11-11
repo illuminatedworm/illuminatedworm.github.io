@@ -22,17 +22,17 @@
     var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
   </script>
 
-  <meta name="description" content="前言最近在读《Java并发编程实战》，稍微整理一下基础知识。这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。 在Java中，线程生命周期如下：  并发与并行相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。 借用名著《并发的艺术》的说法：  A system is said to be concurrent if it can supp">
+  <meta name="description" content="Kotlin协程实现细节：见此 Dragonwell的Wisp2：见此 前言最近在读《Java并发编程实战》，稍微整理一下基础知识。这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。 在Java中，线程生命周期如下：  并发与并行相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。 借用名著《并发的艺术》的说法：  A system is">
 <meta property="og:type" content="article">
 <meta property="og:title" content="异步与同步，阻塞与非阻塞，并发与并行">
 <meta property="og:url" content="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/index.html">
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
-<meta property="og:description" content="前言最近在读《Java并发编程实战》，稍微整理一下基础知识。这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。 在Java中，线程生命周期如下：  并发与并行相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。 借用名著《并发的艺术》的说法：  A system is said to be concurrent if it can supp">
+<meta property="og:description" content="Kotlin协程实现细节：见此 Dragonwell的Wisp2：见此 前言最近在读《Java并发编程实战》，稍微整理一下基础知识。这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。 在Java中，线程生命周期如下：  并发与并行相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。 借用名著《并发的艺术》的说法：  A system is">
 <meta property="og:image" content="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/Thread.png">
 <meta property="og:image" content="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/callback_hell.jpeg">
 <meta property="og:image" content="http://yoursite.com/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/fiber.png">
 <meta property="article:published_time" content="2020-10-01T14:04:05.000Z">
-<meta property="article:modified_time" content="2020-10-27T11:50:48.193Z">
+<meta property="article:modified_time" content="2020-11-11T13:35:07.549Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="Kotlin">
@@ -251,7 +251,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-27 19:50:48" itemprop="dateModified" datetime="2020-10-27T19:50:48+08:00">2020-10-27</time>
+                <time title="修改时间：2020-11-11 21:35:07" itemprop="dateModified" datetime="2020-11-11T21:35:07+08:00">2020-11-11</time>
               </span>
 
           
@@ -263,7 +263,9 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在读《Java并发编程实战》，稍微整理一下基础知识。<br>这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。</p>
+        <p>Kotlin协程实现细节：<a href="https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md#implementation-details" target="_blank" rel="noopener">见此</a></p>
+<p>Dragonwell的Wisp2：<a href="https://github.com/alibaba/dragonwell8/wiki/Wisp%E6%96%87%E6%A1%A3" target="_blank" rel="noopener">见此</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在读《Java并发编程实战》，稍微整理一下基础知识。<br>这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。</p>
 <p>在Java中，线程生命周期如下：</p>
 <img src="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/Thread.png" class="">
 <h2 id="并发与并行"><a href="#并发与并行" class="headerlink" title="并发与并行"></a>并发与并行</h2><p>相比标题里的前两者，并发和并行的区别更明显也更简单，所以第一个说。</p>
@@ -291,7 +293,7 @@
 <p>虽然非常不像是人话，但这已经说尽了阻塞：当发起<code>read()</code>方法调用，直到达成某些条件前，将没有可用的结果，不管这些条件是预料的正常读取还是别的情况。既然没有可用的结果，那么当前线程运行下去将是意味不明的，将其挂起是完全理所当然的做法。</p>
 <p>而非阻塞是指，调用不会使得线程挂起，在定义上就是这么简单。</p>
 <h2 id="异步与同步"><a href="#异步与同步" class="headerlink" title="异步与同步"></a>异步与同步</h2><p>再次声明，本文不会像许多同类讨论一样大谈内核和底层。在本文的讨论范围中，同步和阻塞完全是一回事，异步和非阻塞也是一回事。</p>
-<p>但这样也导致本小节不会有什么真正可供鉴别的主题——<strong><em>抛掉硬件底层和操作系统层面的事情，所谓的异步与同步的差异，只是类库与框架呈现给程序员的表象</em></strong>。</p>
+<p>但这样也导致本小节不会有什么真正可供鉴别的主题——<strong><em>抛掉硬件底层和操作系统层面的事情，所谓的异步与同步的差异，只是类库与框架呈现给程序员的表象</em></strong>。异步就是分离值的计算和获取，仅此而已。</p>
 <p>本小节<strong>将通过JavaScript看异步编程</strong>，在Web编程中，因为AJAX的流行，从JavaScript中接触异步编程十分普遍。而Java的异步编程更多地见于JavaFX，Swing和数据分析等地方，相对地不是那么常见和便于举例。</p>
 <p>许多Java程序员轻视JavaScript，以至于对<code>promise</code>对象所知甚少，但人人都见过这种写法：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func(f)</span><br><span class="line">.then(f1)</span><br><span class="line">.catch(e1)</span><br><span class="line">.then(f2)</span><br><span class="line">.catch(e2)</span><br></pre></td></tr></table></figure>
@@ -309,12 +311,13 @@
 <p>甚至是这样的（ES6的generator也可以做到，在此不举例）：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> makeBurger = <span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> beef = <span class="keyword">await</span> getBeef();</span><br><span class="line">  <span class="keyword">const</span> cookedBeef = <span class="keyword">await</span> cookBeef(beef);</span><br><span class="line">  <span class="keyword">const</span> buns = <span class="keyword">await</span> getBuns();</span><br><span class="line">  <span class="keyword">const</span> burger = <span class="keyword">await</span> putBeefBetweenBuns(cookedBeef, buns);</span><br><span class="line">  <span class="keyword">return</span> burger;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">makeBurger().then(serve);</span><br></pre></td></tr></table></figure>
 <p>虽然每一行代码对应的具体<code>promise</code>对象的实现还是要落到程序员自己头上（所以还是那句话，没有什么魔法），但最终呈现的效果确实更清晰易读了，把有问题的实现方式换了一种实现方式（麻烦程度究竟有没有降低很难说，前端程序员中也有其他声音）。</p>
-<p>JDK中也有着<code>promise</code>的等价物，即<code>CompletableFuture&lt;T&gt;</code>类，最本质的不同还是在于多线程，此类下的某些方法允许程序员将任务丢给其他线程执行。另外，<code>Collection</code>接口和<code>BaseStream</code>接口中分别提供了<code>parallelStream()</code>和<code>parallel()</code>方法，可以很方便地把原本的数据源并行化（这个说法是由方法名而来的，其实参考第一小节的结论，说是并发化更严谨），最终效果类似<code>async</code>和<code>await</code>关键词：写的是同步代码，执行却不是。而达成这种效果似乎是目前异步编程的主要趋势。</p>
+<p>JDK中也有着<code>promise</code>的等价物，即<code>CompletableFuture&lt;T&gt;</code>类（当然，还是<code>Future&lt;T&gt;</code>用得更多），最本质的不同还是在于多线程，此类下的某些方法允许程序员将任务交给其他线程执行。另外，<code>Collection</code>接口和<code>BaseStream</code>接口中分别提供了<code>parallelStream()</code>和<code>parallel()</code>方法，可以很方便地把原本的数据源并行化（这个说法是由方法名而来的，其实参考第一小节的结论，说是并发化更严谨），最终效果类似<code>async</code>和<code>await</code>关键词：写的是同步代码，执行却不是。而达成这种效果似乎是目前异步编程的主要趋势。</p>
 <h3 id="协程，纤程，Project-Loom"><a href="#协程，纤程，Project-Loom" class="headerlink" title="协程，纤程，Project Loom"></a>协程，纤程，Project Loom</h3><p>协程/纤程（coroutine/fiber），同样的，这两个东西都是较基础的概念，具体实现有多种。</p>
-<p>就JVM语言来说，Kotlin中已经有了协程，然而Kotlin/JVM中的实现方式可能有待时间考验，Kotlin用有限状态机控制的线程池实现协程（来源<a href="https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md#implementation-details" target="_blank" rel="noopener">见此</a>，可以理解为Kotlin做了一层十分友好的封装），这难免令人不太放心，毕竟JVM的线程是这一切的问题之源。</p>
-<p>Java的Project Loom是一个正在进行的纤程类库，试图在JVM层面建立<strong>轻量级虚拟线程</strong>，以解决Java线程过于沉重而不够灵便的问题——与内核线程一比一相关，联系太紧密。</p>
+<p>就JVM语言来说，Kotlin中已经有了协程，然而Kotlin/JVM中的实现方式可能有待时间考验，Kotlin用有限状态机控制的线程池实现协程（可以理解为Kotlin对Java并发做了一层十分友好的封装），这种实现方式下并不存在运行时协程。并且因为Project Loom的存在，可以预见，Kotlin协程在Android有着必要而稳固的地位，而在JVM上就显得有些前途未卜。</p>
+<p>Loom是一个正在进行的纤程（协程Coroutine和纤程Fiber在本文讨论的语境中基本同义）类库，试图在JVM层面建立<strong>轻量级虚拟线程</strong>，以解决Java线程过于沉重而不够灵便的问题——与内核线程一比一相关，联系太紧密。</p>
 <img src="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/fiber.png" class="">
-<p>说白了，就是Go那样的做法，让“语言”来执行调度，自己的事情自己做，只不过Loom似乎还打算支持yield点（<code>generator</code>那样的东西）。一切听起来都很美好，除了这个项目还未落地，在此之前，Kotlin恐怕是JVM平台异步编程的优选（又或者，阿里OpenJDK的WISP？）。</p>
+<p>说白了，类似Go那样的做法（仍有区别，Loom是有栈协程，Goroutine是无栈协程，可以初步地认为前者有功能和兼容性的优势，而后者有性能优势），让“语言”来执行调度，自己的事情自己做，只不过Loom似乎还打算支持yield点（Python中<code>generator</code>那样的东西，注意这个是无栈协程）。一切听起来都很美好，除了这个项目还未落地，在此之前，Kotlin可能是JVM平台异步编程的优选。</p>
+<p>又或者，可以考虑阿里巴巴的Dragonwell？这个OpenJDK分支的Wisp2功能允许以一个JVM参数开启此功能，将几乎整个<code>Thread</code> API无缝转换成协程实现，在一个简单的实例中获得了数量级的性能提升。同时，绝大多数相关功能都被支持（包括整个JUC包），当然存在少数局限和注意事项。</p>
 <h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>说到这一步，我们会发现，如果不按具体层次讨论，标题中的三对概念就会变得格外混乱，根本无从议起。</p>
 <p>难道JavaScript的异步编程只是个肤浅的称呼吗？它切实地解决了一些心智负担问题。</p>
 <p>难道并行流就不能在单核处理器的计算机上运行吗？当然可以。</p>
