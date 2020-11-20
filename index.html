@@ -155,13 +155,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -200,6 +200,109 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/20/JSR-133%EF%BC%8Cvolatile%EF%BC%8C%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/11/20/JSR-133%EF%BC%8Cvolatile%EF%BC%8C%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">JSR-133，volatile，单例模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-11-20 15:23:57 / 修改时间：19:49:54" itemprop="dateCreated datePublished" datetime="2020-11-20T15:23:57+08:00">2020-11-20</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>JSR-133 FAQ：<a href="http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#dcl" target="_blank" rel="noopener">见此</a></p>
+<p>Java Volatile Keyword：<a href="http://tutorials.jenkov.com/java-concurrency/volatile.html" target="_blank" rel="noopener">见此</a></p>
+<p>如果你不想看整篇JSR-133，可以把它的FAQ当作原文的“太长不看版”来看。</p>
+<h2 id="volatile，到底是什么？"><a href="#volatile，到底是什么？" class="headerlink" title="volatile，到底是什么？"></a>volatile，到底是什么？</h2><p>随意地在网上进行一些搜索，可以看到一些关于<code>volatile</code>关键词的解释：“可见性”，“原子性”，“防止指令重排”等等，还有一些摘录自经典书籍《Java并发编程实战》的总结。无论你能否能通过这些理解<code>volatile</code>关键词……总之，有一些原因促使我自己的本篇博客产生。</p>
+<p>在一起之前，先来明确一些有助于理解的基本事实：</p>
+<ul>
+<li><code>volatile</code>有着一段历史：这是一个传承自C/C++的关键词，在C/C++中，这个关键词的含义只有类似Java中防止指令重排的作用——防止编译器优化被其修饰的变量，因为一个变量即使在此处看起来可以被优化，它仍然可能在别的什么地方被改变，如果编译器照常进行优化，程序就可能出错。然而由于Java内存模型的特殊性，<code>volatile</code>关键词在Java中后来还被新增了一些内存语义。</li>
+<li><code>volatile</code>关键词在实践中并不那么重要，首先它的效果十分地有局限性和并非全然无害，其次并发编程经过多年的发展，我们已经有更好的理念和实践来处理曾经<code>volatile</code>所面对的问题。理解它更多地是理论解读的意义。</li>
+<li>需要一些Java内存模型的前置知识来理解<code>volatile</code>。</li>
+</ul>
+<h3 id="Java内存模型简介"><a href="#Java内存模型简介" class="headerlink" title="Java内存模型简介"></a>Java内存模型简介</h3><img src="/2020/11/20/JSR-133%EF%BC%8Cvolatile%EF%BC%8C%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/jmm.png" class="">
+<p>线程可能运行在不同的CPU里，而变量存放在主内存中，出于性能考虑，变量可能会被复制到CPU缓存中进行操作（注意，这里说的是Java内存模型，不要假定主内存和CPU缓存对硬件层面的内存和寄存器的关系）。</p>
+<p>关键在于，CPU缓存和主内存间的变量复制究竟何时发生，是并不确定的。CPU缓存1和CPU缓存2以未知顺序分别从主内存中复制变量，线程1和线程2分别对变量进行操作后，CPU缓存1和CPU缓存2中的可能改变的变量又以未知顺序分别复制回主内存，这一系列事件从<em>某种</em>角度来看，可以诠释为线程1与线程2之间不知道对方做了什么，此即线程间的不可见性。</p>
+<p>“可见性”这个词更像是被提出来避免谈及Java内存模型才用的，可是它有点抽象。其实经此番了解，很自然地会发现这就是典型的缓存不一致性问题，这在普遍综合运用Redis和关系型数据库的今天，真是再日常不过的问题了。</p>
+<h2 id="曾经存在过的问题"><a href="#曾经存在过的问题" class="headerlink" title="曾经存在过的问题"></a>曾经存在过的问题</h2><p>所以，究竟有什么问题，导致了Java内存模型和<code>volatile</code>语义的变动？来看一个非常熟悉的例子，双检查锁定单例模式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果你熟悉这种做法而且敏锐，就会意识到，这样写不正确，成员变量<code>instance</code>缺少<code>volatile</code>修饰符。但请注意，从一开始，DSL就是这样的，并没有人强调变量需要如何被修饰，这种看似聪明的做法会出错（然而话说回来，谁又会为了四句代码去认真地了解Java模型的问题呢？）。</p>
+<p>为什么会出错？因为一个线程在第一个非空判断处可能读取到另一个线程创建到一半的<code>instance</code>对象，这个未完成的对象并非<code>null</code>，所以检测通过，此对象被返回。这非常地反直觉，我们可能从未料想到Java竟然不能判断一个对象是否“完整”，还将它从主内存同步到CPU缓存，最终因此出错（你可能会进一步地好奇在其他语言中又会怎么样，由于这是一个历史问题，只便于与C/C++这种“原生语言”进行比较，在它们的情况里，事情更复杂——结果依赖于类库，编译器和具体的运行平台）。</p>
+<h2 id="volatile如何修复问题"><a href="#volatile如何修复问题" class="headerlink" title="volatile如何修复问题"></a>volatile如何修复问题</h2><p>关于<code>volatile</code>关键词，其内存语义的核心意义是：<strong>被修饰的变量存储在主内存中</strong>。具体地说：</p>
+<ul>
+<li>任何一次对<code>volatile</code>变量的读取，都从主内存中读取；</li>
+<li>任何一次对<code>volatile</code>变量的写入，都写入主内存中；</li>
+<li>这些读取和写入将会被同步（说人话就是依序逐一执行）。</li>
+</ul>
+<p>再从“可见性”的角度来审视一下新规定下的情况：任何线程都将看得见对<code>volatile</code>变量的最后一次写入。此即<code>volatile</code>对可见性的保证。好了，问题被解决了，只要以<code>volatile</code>修饰上例的<code>instance</code>变量，代码就能如预期般正常执行（顺便一提，无论是静态内部类占位符写法还是再后来的枚举写法，显然都比双重检查锁定写法只好不差，更健壮可靠，更清晰易读）。</p>
+<h2 id="volatile为什么在实践中不那么重要"><a href="#volatile为什么在实践中不那么重要" class="headerlink" title="volatile为什么在实践中不那么重要"></a>volatile为什么在实践中不那么重要</h2><p>前文已经解释了前言铺垫中的大部分命题，接下来的内容对于<code>volatile</code>关键词来说有一些负面。</p>
+<p>我个人不赞成在<code>volatile</code>的辨析中提及“原子性”，即便严格地看，它的确保证了原子性，只不过是对于上面提及的读取和写入这俩“单条指令”而言，可以想见读取和写入操作在底层的运行需要不止一条机器码。这一系列机器码的执行得到了原子性保证的事实，对于使用高级编程语言的程序员而言，有多少意义可言呢？我们所写的每一行代码都代表着许多机器码，从高级编程语言的角度来看，所谓<code>volatile</code>的原子性几乎就和任何一行代码般没有特别之处。</p>
+<p>并且因为程序员更常接触的原子性概念是数据库事务那样的，对于<code>volatile</code>非常容易产生误解。对于<code>i += 1</code>这样简单的代码，如果你考虑<code>volatile</code>的“原子性”，可能会阶段性地经历以下“坑”：</p>
+<ol>
+<li>忽视这个代码是复合操作，代表着三个不同的操作：读取变量，修改，写回变量；</li>
+<li>以为<code>volatile</code>能保证上述复合操作的原子性（不，它不能）；</li>
+<li>如果<code>i</code>是引用类型，<code>+= 1</code>换作会改变其内部状态的方法，遗忘并忽略任何关于原子性的事情。</li>
+</ol>
+<p>第一、二点加起来再引申一下，就是到处都可见的用<code>volatile</code>变量写多线程读写计数器的反面教材用例（同样因为太常见所以不给出代码），<code>volatile</code>变量的作用实在是太有限了，只靠它，甚至连这样一个简单的程序都搞不定（严格地说，只用<code>volatile</code>是可以写出同样效果的正确程序，但是那也太复杂且没有必要了）。</p>
+<p>位于java.util.concurrent.atomic包中的各种原子类，除了具有和<code>volatile</code>变量相同的内存语义，还支持原子性的复合操作，用<code>AtomicInteger</code>来实现上面提到的计数器，将兼具简单，安全和高性能的优势，它们基于底层系统原语的CAS实现，也使得性能显著。在多数情况下，这些原子类都是<code>volatile</code>变量的更佳版本（同样，多数情况下，原子类也比悲观锁高效，并且针对常见的ABA问题，JDK也提供了带版本号的原子类作为解决方案）。</p>
+<p>联系之前介绍的内容，就会发现，只有当单个线程对某个变量写，而其他线程只对这个变量读时，只靠<code>volatile</code>就可以使一切正确。而这样的情况在实践中可以说是很狭隘了，哪怕只稍微复杂一点的情况，就需要额外的处理。并且<code>volatile</code>并不是全然无害的，CPU缓存的意义在于提升性能，而强行将一个变量存储在主内存是有一些性能问题，但硬件的进步使得<code>volatile</code>变量相比普通变量的额外代价完全不值一提，<code>volatile</code>变量对性能的潜在威胁来自它妨碍指令重排的性质，众所周知的是，JIT编译器会对字节码进行优化，而出乎许多人意料的是，这种优化可能<strong>非常激进</strong>，只要编译器认为优化结果的最终运行效果与原本的串行运行结果一致，可以说一切都是被允许的（顺便一提，反射的性能问题也一部分要归因于妨碍指令重排），激进的优化自然会有明显效果，而<code>volatile</code>变量可能使你失去重要的优化。</p>
+<h3 id="一点牢骚"><a href="#一点牢骚" class="headerlink" title="一点牢骚"></a>一点牢骚</h3><p>还有，一些人不屑于提及的是，<code>volatile</code>确实有一些学习成本，这是很现实的困难，很多关于<code>volatile</code>的解释不是很直接明白，初学者在资料查找中很可能陷入更多麻烦中。对此，JLS的指导作用可以说“功不可没”，JLS声明，<code>volatile</code>可以解决“数据竞争（data race）”，而且这个声明被很多二手资料提及，并引申地谈到“竞态条件（race condition）”。初学者怀揣着“可见性”，“原子性”之类一知半解的概念而来，收获了更多更难的概念。绝大多数人都声称数据竞争和竞态条件不是一回事，它们也不是彼此的子集，然而就我个人而言，我从未见过一个很好的Java实例能独立地区别于对方。当你查阅维基百科，你会发现数据竞争没有独立的条目，它被写在竞态条件的条目里，而你可以读到这样一句话：</p>
+<blockquote>
+<p>Not all regard data races as a subset of race conditions.<a href="https://en.wikipedia.org/wiki/Race_condition#cite_note-5" target="_blank" rel="noopener">[5]</a> </p>
+<p>（并非所有人都认为数据竞争是竞态条件的子集。）</p>
+</blockquote>
+<p>不客气地说，是学院派咀嚼术语的固执造的孽。竞态条件这个概念的提出甚至早于集成电路被发明，而数据竞争是编程语言和软件工程时代的新概念，而某些人试图辨明它们二者，显然，效果很不好。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>再想想上一节提到的那种适合<code>volatile</code>关键词的情况，是否有些像是发布/订阅模式，那么实践中是怎么处理复杂的发布订阅模式的呢？通常，最基本的是，我们要借助队列（JVM内或中间件）。这正指向另一方面，在编程语言的发展中，针对并发编程出现了许多新的理念和实践，即便是《Java并发编程实战》这本有些年头的经典，也承认，解决并发编程中的各种问题的最佳手段，是让它们从一开始就不出现，同时此书也用了较多篇幅反复强调，书里提及的那些处理手段是有代价的，并且你应该永不忽略性能问题，使用了复杂的技术，最终却编写出比等价同步程序还缓慢的并发程序可不是少数人犯的笑话（想想Redis社区吧，在多个分支实践了多线程IO和经过漫长的辩论后，才在6.0版本推出了多线程IO以提升性能）。</p>
+<p>例如像共享变量这个基础要求，你应该考虑这个变量是不是真的必须要同步，否则，将它封闭到线程中可能是更好的主意（<code>ThreadLocal</code>类）。甚至某些语言在这一点上施行得更加极端，例如，强调<code>final</code>变量，以线程封闭变量为常态。在Go这样受到Actor模型影响的语言里，共享变量是更有意而为的，经过某些显式的调用才能在线程间共享变量是常态。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -1285,130 +1388,6 @@
 </table>
 </div>
 <p>通过给@Around注释的方法中的<code>proceedingJoinPoint.proceed()</code>语句围绕try-catch-finally代码块，@Aroud注释的方法就能囊括所有其他调用时机。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/08/%E4%BB%8EMybatis%E7%9C%8B%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%92%8C%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="IlluminatedWorm">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="IlluminatedWorm's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/09/08/%E4%BB%8EMybatis%E7%9C%8B%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%92%8C%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">从Mybatis看动态代理和设计模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-09-08 01:04:01" itemprop="dateCreated datePublished" datetime="2020-09-08T01:04:01+08:00">2020-09-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-14 22:48:36" itemprop="dateModified" datetime="2020-09-14T22:48:36+08:00">2020-09-14</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>本文基于JDK 1.8.0_261，Mybatis 3.5.5。</p>
-<h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><ol>
-<li>接口规定方法，具体的实现类继承（inherit）接口，实现方法。这个过程就像某人签署了一份有要求的协议，遵守了某种约定。</li>
-<li>向上转型，实例化子类对象，将其声明为超类类型。在Java中接口不能被实例化，但可以在向上转型时用作声明。</li>
-<li>Java的反射机制赋予程序员在运行时分析和操作类的能力。</li>
-</ol>
-<p>像这样的基础知识在初学时都会感觉有些不知所云，它们过于抽象，即使能完全理解其字面，也会因为缺乏对实际运用情景的了解而体会浅显。</p>
-<p>许多东西就像各种专业工具，它叫什么和包含了什么概念并不是首要的，首要的是它能做什么，某些情况下知道它不能做什么也非常重要。</p>
-<p>反射机制尚可联想出一些具有通用性的简单工具类来加以实践，而类似1，2点则彻底令人一头雾水，这是因为它们的概念和实现往往都和设计模式有关。Mybatis正是运用到了相关的设计模式，它毫无疑问是一个具体，有效，好用的工具——它实现了这样的目的：以更标准（以DTD模板和库内十分硬编码的解析方式约束配置文件写法）和更便捷的方式处理持久化层代码（可能需要搭配第三方工具和插件）。借由理解这个工具的原理，可以解惑。但在此之前先复习一下动态代理。</p>
-<h2 id="2-动态代理"><a href="#2-动态代理" class="headerlink" title="2 动态代理"></a>2 动态代理</h2><p>假设现在存在这样的需求：有相当数目的遗留代码，现在需要对其中的方法附加新功能，而你被要求不能改动遗留代码（更可能的是你自己就不想干牵一发而动全身的恐怖事情）。那么你需要的就是所谓的“非侵入式代码”，具体的做法是，写一个新的类，将旧类作为成员变量包进来，在新类的方法中调用旧类的方法并附加你的新功能。十分易懂。专门自己完全手写这样的类就是所谓的静态代理。</p>
-<p>动态代理和静态代理的本质都一样，所谓的动态就是通过找到一种既定的模式，让程序自己处理方法调用那一步，这样面对几十个类就不需要写几十个代理类了，而这份“既定的模式”就依赖接口来达成，程序通过接口来得知有哪些方法，<strong>Java原生动态代理</strong>的前提就是，<strong>被代理的类应该有其接口</strong>。</p>
-<h3 id="2-1-测试代码"><a href="#2-1-测试代码" class="headerlink" title="2.1 测试代码"></a>2.1 测试代码</h3><p>接口：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description: Interface of simple calculator.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Calculator</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>实现类：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description: Impelement of simple calculator.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CalculatorImpl</span> <span class="keyword">implements</span> <span class="title">Calculator</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a + b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代理处理器：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationHandler;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Parameter;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description: the hanlder for calculator.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CalculatorHanlder</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Object target;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CalculatorHanlder</span><span class="params">(Object target)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        StringBuilder strBuilder = <span class="keyword">new</span> StringBuilder(<span class="string">"Now we intercept method "</span>);</span><br><span class="line">        strBuilder.append(method.getName()).append(<span class="string">"("</span>);</span><br><span class="line">        String prefix = <span class="string">""</span>;</span><br><span class="line">        <span class="keyword">for</span> (Parameter parameter : method.getParameters()) &#123;</span><br><span class="line">            strBuilder.append(prefix);</span><br><span class="line">            prefix = <span class="string">", "</span>;</span><br><span class="line">            strBuilder.append(parameter.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        strBuilder.append(<span class="string">"), parameters = ["</span>);</span><br><span class="line">        prefix = <span class="string">""</span>;</span><br><span class="line">        <span class="keyword">for</span> (Object arg : args) &#123;</span><br><span class="line">            strBuilder.append(prefix);</span><br><span class="line">            prefix = <span class="string">", "</span>;</span><br><span class="line">            strBuilder.append(arg.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        strBuilder.append(<span class="string">"], we are able to do things as we wish."</span>);</span><br><span class="line">        System.out.println(strBuilder.toString());</span><br><span class="line">        Integer result = (Integer) method.invoke(target, args) + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.Proxy;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description: Let's check out.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"result of 3 + 7 ?"</span>);</span><br><span class="line">        CalculatorImpl calculator = <span class="keyword">new</span> CalculatorImpl();</span><br><span class="line">        <span class="keyword">int</span> result0 = calculator.add(<span class="number">3</span>, <span class="number">7</span>);</span><br><span class="line">        System.out.println(<span class="string">"result without proxy: "</span> + result0);</span><br><span class="line"></span><br><span class="line">        Object proxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(),</span><br><span class="line">                <span class="keyword">new</span> Class[]&#123;Calculator<span class="class">.<span class="keyword">class</span>&#125;,</span></span><br><span class="line"><span class="class">                <span class="title">new</span> <span class="title">CalculatorHanlder</span>(<span class="title">calculator</span>))</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> result1 = ((Calculator) proxy).add(<span class="number">3</span>, <span class="number">7</span>);</span><br><span class="line">        System.out.println(<span class="string">"result with proxy: "</span> + result1);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出结果：</p>
-<blockquote>
-<p>result of 3 + 7 ?<br>result without proxy: 10<br>Now we intercept method add(int arg0, int arg1), parameters = [3, 7], we are able to do things as we wish.<br>result with proxy: 11</p>
-</blockquote>
-<h3 id="2-2-就是这样"><a href="#2-2-就是这样" class="headerlink" title="2.2 就是这样"></a>2.2 就是这样</h3><p>如上所见，对代理对象调用方法时，它就会“拦截”到这份调用，把代理对象，被调用方法和参数都呈递出来。在这里，我用反射分析并输出了“拦截”到的方法的签名，还为其计算结果增加了1，可以做的事情十分自由，尤其是知道被代理类的具体情况，可以根据方法名“拦截”特定方法而对其他方法“放行”，可以判断对参数的强制类型转换是否安全。至于代理对象，典型的场景是代理对象存储在集合内，对集合的操作都是对代理对象的操作，你会想要处理代理对象而不是被代理对象。</p>
-<p><code>Proxy</code>实例加上处理器就是静态代理中代理类的等价物，只是凭借接口的约定，达到了美妙的编程体验（当然可能也增加了一些反射机制的常见苦恼，通用性是有代价的），并没有什么魔法。</p>
-<p>在调试中可以看到proxy实例的类型是<code>$Proxy0</code>，可以让JVM保留它的类文件。在我这里是这样做的，在程序开头加入：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.getProperties().setProperty(<span class="string">"sun.misc.ProxyGenerator.saveGeneratedFiles"</span>, <span class="string">"true"</span>);</span><br></pre></td></tr></table></figure>
-<p>或设置JVM参数“-Dsun.misc.ProxyGenerator.saveGeneratedFiles=true”。注意，<code>ProxyGenerator</code>在不同的JDK版本中可能位于不同的包下。</p>
-<p>反编译$Proxy0.class能直观地明白为什么动态代理只能依赖接口而不是类，因为$Proxy0已经扩展了<code>Proxy</code>。并且可以看出这个类的目的，非常简单而贴心，它巨细无遗地为你拦截了传入接口中的方法（包括继承而来的方法），把参数传入给处理器的<code>invoke()</code>方法，并对返回值进行强制类型转换。从这些重复工作中解脱出来正是使用动态代理的魅力。</p>
-<p>如果只是这样，感觉动态代理类似乎也并不是那么有用，那么可以通过Mybatis的Mapper再来体会一下。</p>
-<h2 id="3-Mybatis"><a href="#3-Mybatis" class="headerlink" title="3 Mybatis"></a>3 Mybatis</h2><p>在进入<code>getMapper()</code>方法之前，有必要简单领略一下Mybatis的整个流程，只是从较高的抽象层次讲述，不会从源代码中一条一条的分析。典型的使用流程如下图：</p>
-<img src="/2020/09/08/%E4%BB%8EMybatis%E7%9C%8B%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%92%8C%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/Mybatis%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B.png" class="">
-<ol>
-<li>以mybatis-config.xml文件创建流。</li>
-<li>创建<code>SqlSessionFactoryBuilder</code>实例，调用用它的<code>builder()</code>，将上面的输入流传入，获取<code>SqlSessionFactory</code>对象。</li>
-<li>调用<code>SqlSessionFactory</code>实例的<code>openSession()</code>方法获取<code>SqlSession</code>对象。</li>
-<li>调用<code>SqlSession</code>实例的<code>getMapper()</code>方法，将某个DAO层接口的<code>Class</code>对象传入，获取代理对象。</li>
-</ol>
-<p>这个流程乍看起来似乎很麻烦，为什么要分割成这么多步呢？有很多理由支持这样的做法。</p>
-<h3 id="3-1-应该快速死亡的SqlSessionFactoryBuilder"><a href="#3-1-应该快速死亡的SqlSessionFactoryBuilder" class="headerlink" title="3.1 应该快速死亡的SqlSessionFactoryBuilder"></a>3.1 应该快速死亡的SqlSessionFactoryBuilder</h3><p>如流程图所示，<code>SqlSessionFactoryBuilder</code>实例的唯一目的是创建出一个<code>Configuration</code>类型的实例，<code>Configuration</code>对象可以认为是对mybatis-config.xml的映射，如果你查看源代码，就会发现这个类整整有50个字段！并且某些字段还是包含更多数据的集合！</p>
-<p>如此多的字段需要装填，这些数据还需要颇为麻烦的XML文本解析——嵌套的标签，判错，赋予缺省值……因此Mybatis的实现者对此采用了构建器模式，即便如此，代码层层往下看起来仍然十分麻烦，为普通JavaBean类编写的构建器与之相比可是说是小巫见大巫了。不过我们现在并不关心类库程序员的烦心事。</p>
-<p>作为用户，我们应该想到的是，解析文本从来都是一件麻烦事，除了具体实现，还有这些实现所占用的资源。严格地讲，解析mybatis-config.xml所用的是一个有限状态机，它颇为昂贵，而解析得到的<code>Configuration</code>相比之下不过是更单纯的一系列数据结构。合情合理地，解析资源应该被尽快释放。</p>
-<h3 id="3-2-我只是要发起会话而已……SqlSessionFactory"><a href="#3-2-我只是要发起会话而已……SqlSessionFactory" class="headerlink" title="3.2 我只是要发起会话而已……SqlSessionFactory"></a>3.2 我只是要发起会话而已……SqlSessionFactory</h3><p>从源代码来看，<code>SqlSessionFactory</code>不过包装着仅有的一个<code>Configuration</code>对象，有数个私有的较复杂方法和一系列公开的<code>openSession()</code>方法的简单重载，然而这就是工厂模式的简单形式。大多数时候，用户只是想要简单地想要一个<code>SqlSession</code>罢了，并不想填写那些可选参数。于是这个工作被交由几个公开方法承担，它们填写符合直觉与约定的缺省值（例如，对于SQL语句是否自动提交，你并不想每次都去填写一个布尔值），调用那些看起来就麻烦的私有方法，将结果传递给用户。</p>
-<p>从用户体验来看，这个设计模式的效果是良好的。</p>
-<p><code>SqlSessionFactory</code>中包含得来不易的那个<code>Configration</code>对象，应该把它做成单例模式里的常量反复使用，当然这在Spring框架里这是不需要自己实现的。</p>
-<p><code>SqlSessionFactoryBuilder</code>对象在完成它的任务后不再被引用，最终将被GC回收掉，<code>SqlSessionFactory</code>对象作为枚举实例的字段保留下来。一切正如Mybatis官方建议的那样。</p>
-<h3 id="3-3-不是Connection而是SqlSession"><a href="#3-3-不是Connection而是SqlSession" class="headerlink" title="3.3 不是Connection而是SqlSession"></a>3.3 不是Connection而是SqlSession</h3><p><code>SqlSession</code>对象看起来像是<code>Connection</code>和<code>&lt;T extends Statement&gt;</code>的综合，可以向它传入Sql语句和参数，它与数据库连接并执行Sql语句。它的名字容易让人想到Web中的Session，Session是计算机科学的一个基本概念，而<code>SqlSession</code>和Web中的Session都可以看作此概念在特定领域的实现。</p>
-<p>值得一提的是Mybatis自带了数据库连接池的实现，当<code>SqlSession</code>对象调用<code>close()</code>方法时，追踪看下去似乎就是对应的<code>Connection</code>对象调用<code>close()</code>方法，但其实这里仍然用到了代理模式，这份调用最终会被<code>PooledConnection</code>“拦截”，将连接放回连接池而不是真正的关闭它。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PooledConnection</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">    <span class="comment">//... 省略</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Connection proxyConnection;</span><br><span class="line">    <span class="comment">//... 省略</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PooledConnection</span><span class="params">(Connection connection, PooledDataSource dataSource)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//... 省略</span></span><br><span class="line">        <span class="keyword">this</span>.proxyConnection = (Connection)Proxy.newProxyInstance(Connection<span class="class">.<span class="keyword">class</span>.<span class="title">getClassLoader</span>(), <span class="title">IFACES</span>, <span class="title">this</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//... 省略</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        String methodName = method.getName();</span><br><span class="line">        <span class="keyword">if</span> (<span class="string">"close"</span>.equals(methodName)) &#123;</span><br><span class="line">            <span class="keyword">this</span>.dataSource.pushConnection(<span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!Object<span class="class">.<span class="keyword">class</span>.<span class="title">equals</span>(<span class="title">method</span>.<span class="title">getDeclaringClass</span>())) </span>&#123;</span><br><span class="line">                    <span class="keyword">this</span>.checkConnection();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> method.invoke(<span class="keyword">this</span>.realConnection, args);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable var6) &#123;</span><br><span class="line">                <span class="keyword">throw</span> ExceptionUtil.unwrapThrowable(var6);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//... 省略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><code>PooledConnection</code>中有一个比较令人迷惑的做法，它实现了<code>InvocationHandler</code>，那么理所当然它只是处理器而已，但实现者似乎是为了方便，在这个类的构造器中就用当前实例创建了动态代理实例，也就是说，<code>PooledConnection</code>的实例包含了一个与自身互相引用的字段。在Mybatis中的其他处理器类中没有采用这种做法，</p>
-<p>总之，这种做法也许不失为将<code>Proxy</code>实例和处理器一体化的可行做法。</p>
-<h3 id="3-4-getMapper"><a href="#3-4-getMapper" class="headerlink" title="3.4 getMapper()"></a>3.4 getMapper()</h3><p>对<code>SqlSessionFactory</code>的<code>getMapper()</code>方法往下追踪，可以在<code>MapperRegistry</code>类中发现如下代码（省略了大部分）：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MapperRegistry</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Class&lt;?&gt;, MapperProxyFactory&lt;?&gt;&gt; knownMappers = <span class="keyword">new</span> HashMap();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getMapper</span><span class="params">(Class&lt;T&gt; type, SqlSession sqlSession)</span> </span>&#123;</span><br><span class="line">        MapperProxyFactory&lt;T&gt; mapperProxyFactory = (MapperProxyFactory)<span class="keyword">this</span>.knownMappers.get(type);</span><br><span class="line">        <span class="keyword">if</span> (mapperProxyFactory == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BindingException(<span class="string">"Type "</span> + type + <span class="string">" is not known to the MapperRegistry."</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> mapperProxyFactory.newInstance(sqlSession);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception var5) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> BindingException(<span class="string">"Error getting mapper instance. Cause: "</span> + var5, var5);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>KnownMappers是解析XML配置文件得来的<code>HashMap</code>，其键来自mapper配置里的namespace，即用户配置的接口，通过<code>getMapper()</code>方法传入的<code>Class</code>对象来匹配并获得对应的代理工厂。</p>
-<p>我们最终可以在<code>MapperProxy</code>中找到关键的方法调用，它进行了许多小心翼翼的判断，传入的类是否为<code>Object</code>，调用的方法是否为默认方法（有方法体的接口方法），针对性进行各自适宜的处理，最终，它用接口名和方法名去<code>Configuration</code>中匹配找到解析语句标签得到的相关对象，用以生成Sql语句并调用<code>SqlSession</code>中的对应方法执行。</p>
-<h2 id="4-不限于斯，第三方动态代理"><a href="#4-不限于斯，第三方动态代理" class="headerlink" title="4 不限于斯，第三方动态代理"></a>4 不限于斯，第三方动态代理</h2><p>就像之前提到的，Java原生动态代理需要一个前提，被代理类实现了某个接口。可是为Bean类提供接口并不是普遍的做法，那么Mybatis如何动态生成和填充相应的Bean对象呢，如果使用反射，那么要做的工作是：查找Bean类的无参构造器，改变其可访问性，查找字段，根据字段名查找Setter方法，改变其可访问性，构造实例，调用Setter方法……</p>
-<p>我们会发现，即时忽略需要接口的前置条件，Java原生代理似乎对于当前的需求仍不太适宜：Java原生动态代理可以很快地生成新类，可是反射虽然说不上慢，却也不快，反射所须的上述一系列“周全”的工作拖慢了后续执行。为此，Mybatis中用了第三方工具CGLib来解决对Bean类代理问题，CGLib是基于继承机制和第三方ASM框架的，ASM框架加载被代理类的字节码文件，加以修改生成子类，靠更快的后续执行胜过反射。</p>
-<p><strong>至少，曾经是这样的，现在则不一定。</strong>认为Java的反射效率低其实是历史遗留色彩很重的观点，在现在的许多性能基准测试中，在执行次数大的前提下，反射与第三方代替类库的效率相差无几。</p>
-<p>原生工具和第三方工具并没有什么优劣之别，只是侧重点不同。此消彼长，客观规律罢了，实际应用中的重点在于选择。</p>
 
       
     </div>
