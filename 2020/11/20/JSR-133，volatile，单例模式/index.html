@@ -30,7 +30,7 @@
 <meta property="og:description" content="JSR-133 FAQ：见此 Java Volatile Keyword：见此 如果你不想看整篇JSR-133，可以把它的FAQ当作原文的“太长不看版”来看。 volatile，到底是什么？随意地在网上进行一些搜索，可以看到一些关于volatile关键词的解释：“可见性”，“原子性”，“防止指令重排”等等，还有一些摘录自经典书籍《Java并发编程实战》的总结。无论你能否能通过这些理解volatil">
 <meta property="og:image" content="http://yoursite.com/2020/11/20/JSR-133%EF%BC%8Cvolatile%EF%BC%8C%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/jmm.png">
 <meta property="article:published_time" content="2020-11-20T07:23:57.000Z">
-<meta property="article:modified_time" content="2020-11-25T06:36:58.301Z">
+<meta property="article:modified_time" content="2020-11-25T06:43:57.567Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="JVM">
@@ -248,7 +248,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-11-25 14:36:58" itemprop="dateModified" datetime="2020-11-25T14:36:58+08:00">2020-11-25</time>
+                <time title="修改时间：2020-11-25 14:43:57" itemprop="dateModified" datetime="2020-11-25T14:43:57+08:00">2020-11-25</time>
               </span>
 
           
@@ -304,14 +304,14 @@
 <p>（如果一个程序不含数据竞争，那么该程序的所有执行应该是串行一致的。）</p>
 <p>（串行一致性和/或免于数据争用的影响，仍会导致应为原子性的，却没有具备原子性的操作组合引发错误。）</p>
 </blockquote>
-<p>无论如何，JLS没有提及“竞态条件”一词。<br>绝大多数人都声称数据竞争和竞态条件不是一回事，它们也不是彼此的子集，然而就我个人而言，我从未见过一个很好的Java实例能独立地区分二者。当你查阅维基百科，你会发现数据竞争没有独立的条目，它被写在<a href="https://en.wikipedia.org/wiki/Race_condition" target="_blank" rel="noopener">竞态条件的条目</a>里，并且可以看到这两句话：</p>
+<p>无论如何，JLS没有提及“竞态条件”一词。绝大多数人都声称数据竞争和竞态条件不是一回事，它们也不是彼此的子集，然而就我个人而言，我从未见过一个很好的Java实例能独立地区分二者。当你查阅维基百科，你会发现数据竞争没有独立的条目，它被写在<a href="https://en.wikipedia.org/wiki/Race_condition" target="_blank" rel="noopener">竞态条件的条目</a>里，并且可以看到这两句话：</p>
 <blockquote>
 <p>A data race is a type of race condition. </p>
 <p>（数据竞争是竞态条件的一种类型。）</p>
 <p>Not all regard data races as a subset of race conditions.</p>
 <p>（并非所有人都认为数据竞争是竞态条件的子集。）</p>
 </blockquote>
-<p>不客气地说，是部分人咀嚼术语的固执造的孽。竞态条件这个概念的提出甚至早于集成电路被发明，而数据竞争很可能（未考证，但未见过早于）是编程语言和软件工程时代的新概念，却有人试图把它们放在一起再辨明区别，显然，效果很不好。</p>
+<p>不客气地说，是部分人咀嚼术语的固执造的孽。竞态条件这个概念的提出甚至早于集成电路被发明，而数据竞争很可能是（未考证，但未见过更早资料）编程语言和软件工程时代的新概念，却有人试图把它们放在一起再辨明区别，显然，效果很不好。</p>
 <h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>再想想上一节提到的那种适合<code>volatile</code>关键词的情况，是否有些像是发布/订阅模式，那么实践中是怎么处理复杂的发布订阅模式的呢？通常，最基本的是，我们要借助队列（JVM内或中间件）。这正指向另一方面，在编程语言的发展中，针对并发编程出现了许多新的理念和实践，即便是《Java并发编程实战》这本有些年头的经典，也承认，解决并发编程中的各种问题的最佳手段，是让它们从一开始就不出现，同时此书也用了较多篇幅反复强调，书里提及的那些处理手段是有代价的，并且你应该永不忽略性能问题，使用了复杂的技术，最终却编写出比等价同步程序还缓慢的并发程序可不是少数人犯的笑话（想想Redis社区的谨慎态度吧，在多个分支实践了多线程IO和经过漫长的辩论后，才在6.0版本推出了多线程IO以提升性能）。</p>
 <p>例如像共享变量这个基础要求，你应该考虑这个变量是不是真的必须要同步，否则，将它封闭到线程中可能是更好的主意（<code>ThreadLocal</code>类）。甚至某些语言在这一点上施行得更加极端，例如，强调<code>final</code>变量，以线程封闭变量为常态。在Go这样受到Actor模型影响的语言里，共享变量是更有意而为的，经过某些显式的调用才能在线程间共享变量是常态。</p>
 
