@@ -238,7 +238,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-11-23 00:34:22" itemprop="dateModified" datetime="2020-11-23T00:34:22+08:00">2020-11-23</time>
+                <time title="修改时间：2020-11-25 14:36:58" itemprop="dateModified" datetime="2020-11-25T14:36:58+08:00">2020-11-25</time>
               </span>
 
           
@@ -254,7 +254,7 @@
 <p>Java Volatile Keyword：<a href="http://tutorials.jenkov.com/java-concurrency/volatile.html" target="_blank" rel="noopener">见此</a></p>
 <p>如果你不想看整篇JSR-133，可以把它的FAQ当作原文的“太长不看版”来看。</p>
 <h2 id="volatile，到底是什么？"><a href="#volatile，到底是什么？" class="headerlink" title="volatile，到底是什么？"></a>volatile，到底是什么？</h2><p>随意地在网上进行一些搜索，可以看到一些关于<code>volatile</code>关键词的解释：“可见性”，“原子性”，“防止指令重排”等等，还有一些摘录自经典书籍《Java并发编程实战》的总结。无论你能否能通过这些理解<code>volatile</code>关键词……总之，有一些原因促使我自己的本篇博客产生。</p>
-<p>在一起之前，先来明确一些有助于理解的基本事实：</p>
+<p>在一切之前，先来明确一些有助于理解的基本事实：</p>
 <ul>
 <li><code>volatile</code>有着一段历史：这是一个传承自C/C++的关键词，在C/C++中，这个关键词的含义只有类似Java中防止指令重排的作用——防止编译器优化被其修饰的变量，因为一个变量即使在此处看起来可以被优化，它仍然可能在别的什么地方被改变，如果编译器照常进行优化，程序就可能出错。然而由于Java内存模型的特殊性，<code>volatile</code>关键词在Java中后来还被新增了一些内存语义。</li>
 <li><code>volatile</code>关键词在实践中并不那么重要，首先它的效果十分地有局限性和并非全然无害，其次并发编程经过多年的发展，我们已经有更好的理念和实践来处理曾经<code>volatile</code>所面对的问题。理解它更多地是理论解读的意义。</li>
