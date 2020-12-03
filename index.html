@@ -238,7 +238,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-11-25 14:43:57" itemprop="dateModified" datetime="2020-11-25T14:43:57+08:00">2020-11-25</time>
+                <time title="修改时间：2020-12-04 00:17:43" itemprop="dateModified" datetime="2020-12-04T00:17:43+08:00">2020-12-04</time>
               </span>
 
           
@@ -250,7 +250,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>JSR-133 FAQ：<a href="http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#dcl" target="_blank" rel="noopener">见此</a></p>
+          <a id="more"></a>
+<p>JSR-133 FAQ：<a href="http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#dcl" target="_blank" rel="noopener">见此</a></p>
 <p>Java Volatile Keyword：<a href="http://tutorials.jenkov.com/java-concurrency/volatile.html" target="_blank" rel="noopener">见此</a></p>
 <p>如果你不想看整篇JSR-133，可以把它的FAQ当作原文的“太长不看版”来看。</p>
 <h2 id="volatile，到底是什么？"><a href="#volatile，到底是什么？" class="headerlink" title="volatile，到底是什么？"></a>volatile，到底是什么？</h2><p>随意地在网上进行一些搜索，可以看到一些关于<code>volatile</code>关键词的解释：“可见性”，“原子性”，“防止指令重排”等等，还有一些摘录自经典书籍《Java并发编程实战》的总结。无论你能否能通过这些理解<code>volatile</code>关键词……总之，有一些原因促使我自己的本篇博客产生。</p>
@@ -357,7 +358,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-11-10 20:50:05" itemprop="dateModified" datetime="2020-11-10T20:50:05+08:00">2020-11-10</time>
+                <time title="修改时间：2020-12-04 00:17:35" itemprop="dateModified" datetime="2020-12-04T00:17:35+08:00">2020-12-04</time>
               </span>
 
           
@@ -369,7 +370,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>本文涉及关键词<code>inline</code>，<code>noinline</code>，<code>crossinline</code>，还会顺便提一下Lambda表达式里的返回值和<code>reified</code>。</p>
+          <a id="more"></a>
+<p>本文涉及关键词<code>inline</code>，<code>noinline</code>，<code>crossinline</code>，还会顺便提一下Lambda表达式里的返回值和<code>reified</code>。</p>
 <p>对于内联，其中<code>noinline</code>和<code>crossinline</code>两个关键词，即使你不知就里，在IDE的提示下仍可以正确使用。</p>
 <h2 id="为什么有inline"><a href="#为什么有inline" class="headerlink" title="为什么有inline"></a>为什么有inline</h2><p>Kotlin的一大特点是主张使用高阶函数配合函数类型建立高可用的自定义结构进行编程，这样有助于控制流程高抽象化和提高代码复用。所谓的高阶函数是指以函数为参数或者返回值的函数（这个概念来自数学，如果你把求导和积分也看作函数，那么你会发现它们的参数和结果都可能是另一个函数）。</p>
 <p>然而和Java一样，Kotlin中的函数实际上也不能作为参数传递，被传递的东西<strong>最终本质</strong>上是一个对象（“函数类型”不是“函数”，<code>mehtod()</code>和<code>(::method)()</code>在底层发生了不同的事）。那么这便引申出一个问题，对象的创建是有代价的，这份代价虽然小，但也绝非没有，如果一个高阶函数被频繁调用——例如在一个执行很多次的循环体里被调用——会怎么样呢？</p>
@@ -471,7 +473,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-29 14:02:58" itemprop="dateModified" datetime="2020-10-29T14:02:58+08:00">2020-10-29</time>
+                <time title="修改时间：2020-12-04 00:18:04" itemprop="dateModified" datetime="2020-12-04T00:18:04+08:00">2020-12-04</time>
               </span>
 
           
@@ -483,7 +485,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>参考资料：《Java核心技术 卷二》，JDK8 API doc</p>
+          <a id="more"></a>
+<p>参考资料：《Java核心技术 卷二》，JDK8 API doc</p>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>先看看<code>Stream</code>最重要的一点，执行顺序。示例代码：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PeekThePeekMethod</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        List&lt;ValuePair&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        list.add(<span class="keyword">new</span> ValuePair(<span class="number">1</span>, <span class="string">"one"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> ValuePair(<span class="number">2</span>, <span class="string">"two"</span>));</span><br><span class="line">        list.add(<span class="keyword">new</span> ValuePair(<span class="number">3</span>, <span class="string">"three"</span>));</span><br><span class="line">        list.stream()</span><br><span class="line">                .peek(valuePair -&gt; System.out.println(valuePair.getCode()))</span><br><span class="line">                .peek(valuePair -&gt; System.out.println(valuePair.getName()))</span><br><span class="line">                .forEach(System.out::println);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ValuePair</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">int</span> code;</span><br><span class="line">        <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// constructors, toString, setter and getter</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>输出结果：</p>
@@ -599,7 +602,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-25 15:22:43" itemprop="dateModified" datetime="2020-10-25T15:22:43+08:00">2020-10-25</time>
+                <time title="修改时间：2020-12-04 00:17:25" itemprop="dateModified" datetime="2020-12-04T00:17:25+08:00">2020-12-04</time>
               </span>
 
           
@@ -611,7 +614,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="HashMap的奇怪容量设置"><a href="#HashMap的奇怪容量设置" class="headerlink" title="HashMap的奇怪容量设置"></a>HashMap的奇怪容量设置</h2><p>在JDK的<code>HashMap</code>中，它的默认初始容量为16，用户输入的任何初始容量都会被计算为不小于输入的2的整数次幂，在实例发生扩容时也会保持容量为2的整数次幂。</p>
+          <a id="more"></a>
+<h2 id="HashMap的奇怪容量设置"><a href="#HashMap的奇怪容量设置" class="headerlink" title="HashMap的奇怪容量设置"></a>HashMap的奇怪容量设置</h2><p>在JDK的<code>HashMap</code>中，它的默认初始容量为16，用户输入的任何初始容量都会被计算为不小于输入的2的整数次幂，在实例发生扩容时也会保持容量为2的整数次幂。</p>
 <p>这是一个比较奇怪的事实。经典书籍《算法导论》中关于散列表的章节是这么说的：</p>
 <img src="/2020/10/11/HashMap%E5%AE%B9%E9%87%8F%E8%83%8C%E5%90%8E%E7%9A%84%E4%BA%89%E8%AE%BA/1.png" class="">
 <p>《算法导论》认为，当采用除法散列法时，散列表的大小应该选取一个较大的，不接近2的整数次幂的质数，并且应该避免选择2的整数次幂。这个说法符合直觉，并且应该是对的，有许多衍生的分析，比如具体哪些数比较好（碰撞率低而本身又不是非常大）。</p>
@@ -696,7 +700,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-11-17 16:03:09" itemprop="dateModified" datetime="2020-11-17T16:03:09+08:00">2020-11-17</time>
+                <time title="修改时间：2020-12-04 00:18:35" itemprop="dateModified" datetime="2020-12-04T00:18:35+08:00">2020-12-04</time>
               </span>
 
           
@@ -708,7 +712,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>Kotlin协程实现细节：<a href="https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md#implementation-details" target="_blank" rel="noopener">见此</a></p>
+          <a id="more"></a>
+<p>Kotlin协程实现细节：<a href="https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md#implementation-details" target="_blank" rel="noopener">见此</a></p>
 <p>Dragonwell的Wisp2：<a href="https://github.com/alibaba/dragonwell8/wiki/Wisp%E6%96%87%E6%A1%A3" target="_blank" rel="noopener">见此</a></p>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在读《Java并发编程实战》，稍微整理一下基础知识。<br>这些术语是上下文相关的，也就是说具体取决于讨论范围和语境。这里只从Java并发编程的角度展开。</p>
 <p>在Java中，线程生命周期如下：</p>
@@ -823,7 +828,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-11 17:05:11" itemprop="dateModified" datetime="2020-10-11T17:05:11+08:00">2020-10-11</time>
+                <time title="修改时间：2020-12-04 00:18:28" itemprop="dateModified" datetime="2020-12-04T00:18:28+08:00">2020-12-04</time>
               </span>
 
           
@@ -835,7 +840,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>太阳底下没有新鲜事。</p>
+          <a id="more"></a>
+<p>太阳底下没有新鲜事。</p>
 <h2 id="goto与其批评"><a href="#goto与其批评" class="headerlink" title="goto与其批评"></a>goto与其批评</h2><p> goto在Java中是保留关键字而不可用（虽然在字节码里我们可以找到它），唯一接近的东西是带标签的<code>break</code>语句：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">label:</span><br><span class="line"><span class="keyword">while</span> (...) &#123;</span><br><span class="line">    <span class="keyword">for</span> (...) &#123;</span><br><span class="line">        <span class="keyword">if</span> (...) <span class="keyword">break</span> label;</span><br><span class="line">        <span class="comment">// do something...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这已经是它最常见的用法，跳出嵌套的控制语句，普通的<code>break</code>只能跳出当前循环。我相信多数人都对它很陌生，也许只有在极少的专注算法实现的代码里会用得上带标签的<code>break</code>语句。</p>
@@ -909,7 +915,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-25 15:20:33" itemprop="dateModified" datetime="2020-10-25T15:20:33+08:00">2020-10-25</time>
+                <time title="修改时间：2020-12-04 00:19:04" itemprop="dateModified" datetime="2020-12-04T00:19:04+08:00">2020-12-04</time>
               </span>
 
           
@@ -921,7 +927,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>主要参考：《Java核心技术 卷一》，《Effective Java》，Oracle官方文档。</p>
+          <a id="more"></a>
+<p>主要参考：《Java核心技术 卷一》，《Effective Java》，Oracle官方文档。</p>
 <p>本文中的“泛型”一词没有特别说明，皆指Java的泛型。</p>
 <h2 id="0-对于应用程序员，究竟应该了解泛型到什么程度"><a href="#0-对于应用程序员，究竟应该了解泛型到什么程度" class="headerlink" title="0 对于应用程序员，究竟应该了解泛型到什么程度"></a>0 对于应用程序员，究竟应该了解泛型到什么程度</h2><p>《Java核心技术 卷一》提到了这个问题，作者把对泛型的了解分为三个档次。我基本同意这种看法，不过我在实践中感到这一套说法应该有所补充。原文大意：</p>
 <blockquote>
@@ -951,7 +958,7 @@
 <h2 id="2-泛型是什么，有什么用"><a href="#2-泛型是什么，有什么用" class="headerlink" title="2 泛型是什么，有什么用"></a>2 泛型是什么，有什么用</h2><p>非常简单，泛型就是把对象类型当作参数一样可输入，介绍给编译器，让编译器去考虑它，将上述的问题从运行时“降低”到了编译时，任何程序员都知道，如果程序非要出错不可，编译时错误总好过运行时错误。在IDE的帮助下，甚至不需要等到真正编译的时候就能解决。</p>
 <p>泛型的种种“复杂”都是为了确保这份美好愿景而衍生出的状况。</p>
 <h2 id="3-泛型不是什么"><a href="#3-泛型不是什么" class="headerlink" title="3 泛型不是什么"></a>3 泛型不是什么</h2><p>谨记泛型只能保持到编译时（其实这个说法不够严谨，在运行时记录并利用泛型信息是可以做到的，Guava和一些序列化类库就这么做了。不过现在不关心反射那方面的事），为了保证它如你所愿的实现，编译器针对泛型做了名为“类型擦除”的一系列工作。</p>
-<p>Java的泛型常常被拿来和C++的<code>Template</code>类作比较，C++的<code>Template</code>类会真正的产生不同类型，而在Java中<code>ArrayList&lt;String&gt;</code>和<code>ArrayList&lt;Integer&gt;</code>严格地讲并不存在，这两个泛型类的表达依赖与原生的<code>ArrayList&lt;T&gt;</code>间的一种映射关系。</p>
+<p>Java的泛型常常被拿来和C++的<code>Template</code>类或C#的泛型作比较，C++的<code>Template</code>类会真正的产生不同类型，而在Java中<code>ArrayList&lt;String&gt;</code>和<code>ArrayList&lt;Integer&gt;</code>严格地讲并不存在，这两个泛型类的表达依赖与原生的<code>ArrayList&lt;T&gt;</code>间的一种映射关系。</p>
 <h2 id="4-类型擦除到底做了些什么"><a href="#4-类型擦除到底做了些什么" class="headerlink" title="4 类型擦除到底做了些什么"></a>4 类型擦除到底做了些什么</h2><p>为了将参数化类型映射到原本的类型，Java编译器进行了类型擦除。经常可以在网上看到像是“Java的泛型只是半吊子，它其实被类型擦除了”这样的说法，这样的说法在某种程度上是有道理的，参数化类型和原生类型的映射关系比起C++的模板类确实显得比较“脆弱”（参数化多态的问题水其实挺深的，对于Java只能期待Project Valhalla早日落成吧）。</p>
 <p>类型擦除做了以下工作：</p>
 <ol>
@@ -1095,10 +1102,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-09-13 16:07:41 / 修改时间：21:50:03" itemprop="dateCreated datePublished" datetime="2020-09-13T16:07:41+08:00">2020-09-13</time>
+              <time title="创建时间：2020-09-13 16:07:41" itemprop="dateCreated datePublished" datetime="2020-09-13T16:07:41+08:00">2020-09-13</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-04 00:18:44" itemprop="dateModified" datetime="2020-12-04T00:18:44+08:00">2020-12-04</time>
+              </span>
 
           
 
@@ -1109,7 +1122,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><p>现在来验证一下在Inflation优化下，Java反射和CGLib的<code>FastClass</code>哪个更高效。所用测试参数，JDK，JMH和JVM详情见输出结果。</p>
+          <a id="more"></a>
+<h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><p>现在来验证一下在Inflation优化下，Java反射和CGLib的<code>FastClass</code>哪个更高效。所用测试参数，JDK，JMH和JVM详情见输出结果。</p>
 <h2 id="2-测试代码和输出结果"><a href="#2-测试代码和输出结果" class="headerlink" title="2 测试代码和输出结果"></a>2 测试代码和输出结果</h2><p>省略Bean类代码</p>
 <p><code>FastClass</code>实现方式：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> net.sf.cglib.reflect.FastClass;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.reflect.FastMethod;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"><span class="keyword">import</span> java.time.LocalDateTime;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * author: illuminated worm</span></span><br><span class="line"><span class="comment"> * version: 1.0</span></span><br><span class="line"><span class="comment"> * description:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FastClassImpl</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> FastClass fastClass = FastClass.create(TestBean<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">FastClassImpl</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">clone</span><span class="params">(T originalObj)</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException </span>&#123;</span><br><span class="line">        Class[] noParam = <span class="keyword">new</span> Class[<span class="number">0</span>];</span><br><span class="line">        FastMethod getA = fastClass.getMethod(<span class="string">"getA"</span>, noParam);</span><br><span class="line">        FastMethod getB = fastClass.getMethod(<span class="string">"getB"</span>, noParam);</span><br><span class="line">        FastMethod getC = fastClass.getMethod(<span class="string">"getC"</span>, noParam);</span><br><span class="line">        FastMethod getD = fastClass.getMethod(<span class="string">"getD"</span>, noParam);</span><br><span class="line">        FastMethod setA = fastClass.getMethod(<span class="string">"setA"</span>, <span class="keyword">new</span> Class[]&#123;String<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line">        FastMethod setB = fastClass.getMethod(<span class="string">"setB"</span>, <span class="keyword">new</span> Class[]&#123;Integer<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line">        FastMethod setC = fastClass.getMethod(<span class="string">"setC"</span>, <span class="keyword">new</span> Class[]&#123;Double<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line">        FastMethod setD = fastClass.getMethod(<span class="string">"setD"</span>, <span class="keyword">new</span> Class[]&#123;LocalDateTime<span class="class">.<span class="keyword">class</span>&#125;)</span>;</span><br><span class="line"></span><br><span class="line">        Object a = getA.invoke(originalObj, noParam);</span><br><span class="line">        Object b = getB.invoke(originalObj, noParam);</span><br><span class="line">        Object c = getC.invoke(originalObj, noParam);</span><br><span class="line">        Object d = getD.invoke(originalObj, noParam);</span><br><span class="line"></span><br><span class="line">        Object clone = fastClass.newInstance();</span><br><span class="line">        setA.invoke(clone, <span class="keyword">new</span> Object[]&#123;a&#125;);</span><br><span class="line">        setB.invoke(clone, <span class="keyword">new</span> Object[]&#123;b&#125;);</span><br><span class="line">        setC.invoke(clone, <span class="keyword">new</span> Object[]&#123;c&#125;);</span><br><span class="line">        setD.invoke(clone, <span class="keyword">new</span> Object[]&#123;d&#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ((T) clone);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException </span>&#123;</span><br><span class="line">        TestBean a = <span class="keyword">new</span> TestBean(<span class="string">"a"</span>, <span class="number">50</span>, <span class="number">100</span>D, LocalDateTime.now());</span><br><span class="line">        TestBean clone = clone(a);</span><br><span class="line">        System.out.println(a == clone);</span><br><span class="line">        System.out.println(a.equals(clone));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1186,7 +1200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-11-27 19:19:28" itemprop="dateModified" datetime="2020-11-27T19:19:28+08:00">2020-11-27</time>
+                <time title="修改时间：2020-12-04 00:17:16" itemprop="dateModified" datetime="2020-12-04T00:17:16+08:00">2020-12-04</time>
               </span>
 
           
@@ -1198,7 +1212,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>参考资料：<a href="https://dzone.com/articles/cglib-missing-manual" target="_blank" rel="noopener">CGLib: The Missing Menual</a></p>
+          <a id="more"></a>
+<p>参考资料：<a href="https://dzone.com/articles/cglib-missing-manual" target="_blank" rel="noopener">CGLib: The Missing Menual</a></p>
 <h2 id="1-不要用非静态内部类创建Callback或者保存其为静态变量"><a href="#1-不要用非静态内部类创建Callback或者保存其为静态变量" class="headerlink" title="1 不要用非静态内部类创建Callback或者保存其为静态变量"></a>1 不要用非静态内部类创建Callback或者保存其为静态变量</h2><p>许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建<code>Enhancer</code>的类中使用匿名内部类创建<code>Callback</code>是危险的。资料作者使用匿名内部类只是为了简化演示代码。</p>
 <p><strong>静态字段可以成为所谓的GC Root</strong>。</p>
 <p><code>Enhancer</code>对象会为它的每个<code>Callback</code>创建一个私有的，静态的字段，而<code>Callback</code>本身在工作时，也会根据情况在<code>Enhancer</code>对象中加入静态字段。如果以匿名内部类创建<code>Callback</code>实例，由于非静态匿名内部类隐式地包含对外部类实例的引用，这会造成外部类实例，<code>Enhancer</code>对象和<code>Callback</code>对象之间交错的相互引用，静态字段加上循环引用非常容易妨碍到GC回收，这种情况下<code>Callback</code>对象<strong>永远</strong>不会被回收，这对于内存管理来说非常危险。</p>
@@ -1320,7 +1335,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-25 15:08:13" itemprop="dateModified" datetime="2020-10-25T15:08:13+08:00">2020-10-25</time>
+                <time title="修改时间：2020-12-04 00:17:56" itemprop="dateModified" datetime="2020-12-04T00:17:56+08:00">2020-12-04</time>
               </span>
 
           
@@ -1332,7 +1347,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="1-测试代码"><a href="#1-测试代码" class="headerlink" title="1 测试代码"></a>1 测试代码</h2><p>导入jar包省略。</p>
+          <a id="more"></a>
+<h2 id="1-测试代码"><a href="#1-测试代码" class="headerlink" title="1 测试代码"></a>1 测试代码</h2><p>导入jar包省略。</p>
 <p>Spring已配置包扫描，加入aspectj支持：</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">aop:aspectj-autoproxy</span>/&gt;</span></span><br></pre></td></tr></table></figure>
 <p>“DAO”层代码：</p>
