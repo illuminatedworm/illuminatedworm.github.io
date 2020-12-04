@@ -22,14 +22,14 @@
     var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
   </script>
 
-  <meta name="description" content="参考资料：CGLib: The Missing Menual 1 不要用非静态内部类创建Callback或者保存其为静态变量许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建Enhancer的类中使用匿名内部类创建Callback是危险的。资料作者使用匿名内部类只是为了简化演示代码。 静态字段可以成为所谓的GC Root。 Enhanc">
+  <meta name="description" content="参考资料：CGLib: The Missing Menual">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CGLib之Enhancer小试">
 <meta property="og:url" content="http://yoursite.com/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/index.html">
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
-<meta property="og:description" content="参考资料：CGLib: The Missing Menual 1 不要用非静态内部类创建Callback或者保存其为静态变量许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建Enhancer的类中使用匿名内部类创建Callback是危险的。资料作者使用匿名内部类只是为了简化演示代码。 静态字段可以成为所谓的GC Root。 Enhanc">
+<meta property="og:description" content="参考资料：CGLib: The Missing Menual">
 <meta property="article:published_time" content="2020-09-13T08:07:03.000Z">
-<meta property="article:modified_time" content="2020-12-04T12:18:59.932Z">
+<meta property="article:modified_time" content="2020-12-04T12:29:36.399Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="CGLib">
@@ -162,13 +162,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -245,7 +245,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-04 20:18:59" itemprop="dateModified" datetime="2020-12-04T20:18:59+08:00">2020-12-04</time>
+                <time title="修改时间：2020-12-04 20:29:36" itemprop="dateModified" datetime="2020-12-04T20:29:36+08:00">2020-12-04</time>
               </span>
 
           
@@ -257,8 +257,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <a id="more"></a>
-<p>参考资料：<a href="https://dzone.com/articles/cglib-missing-manual" target="_blank" rel="noopener">CGLib: The Missing Menual</a></p>
+        <p>参考资料：<a href="https://dzone.com/articles/cglib-missing-manual" target="_blank" rel="noopener">CGLib: The Missing Menual</a></p>
+<a id="more"></a>
 <h2 id="1-不要用非静态内部类创建Callback或者保存其为静态变量"><a href="#1-不要用非静态内部类创建Callback或者保存其为静态变量" class="headerlink" title="1 不要用非静态内部类创建Callback或者保存其为静态变量"></a>1 不要用非静态内部类创建Callback或者保存其为静态变量</h2><p>许多国内博客明显也参考了这份资料，然而他们都忽略了一个资料作者提及的重要事项：出于CGLib的实现原理，在创建<code>Enhancer</code>的类中使用匿名内部类创建<code>Callback</code>是危险的。资料作者使用匿名内部类只是为了简化演示代码。</p>
 <p><strong>静态字段可以成为所谓的GC Root</strong>。</p>
 <p><code>Enhancer</code>对象会为它的每个<code>Callback</code>创建一个私有的，静态的字段，而<code>Callback</code>本身在工作时，也会根据情况在<code>Enhancer</code>对象中加入静态字段。如果以匿名内部类创建<code>Callback</code>实例，由于非静态匿名内部类隐式地包含对外部类实例的引用，这会造成外部类实例，<code>Enhancer</code>对象和<code>Callback</code>对象之间交错的相互引用，静态字段加上循环引用非常容易妨碍到GC回收，这种情况下<code>Callback</code>对象<strong>永远</strong>不会被回收，这对于内存管理来说非常危险。</p>
@@ -344,8 +344,8 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2020/09/13/SpringAOP%E5%B0%8F%E8%AF%95/" rel="prev" title="SpringAOP小试">
-                  <i class="fa fa-chevron-left"></i> SpringAOP小试
+                <a href="/2020/09/08/%E4%BB%8EMybatis%E7%9C%8B%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%92%8C%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="prev" title="从Mybatis看动态代理和设计模式">
+                  <i class="fa fa-chevron-left"></i> 从Mybatis看动态代理和设计模式
                 </a>
             </div>
             <div class="post-nav-item">
