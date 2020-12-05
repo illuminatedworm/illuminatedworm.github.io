@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 反射很慢？改用ASM框架进行字节码操纵？ Atomic包不够用？不得不难看且僭越地调用Unsafe？ 在框架源代码里见到MethodHandle而不是Method？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Lambda表达式，invokedynamic指令和MethodHandle API（一）">
+<meta property="og:url" content="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
+<meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
+<meta property="og:description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 反射很慢？改用ASM框架进行字节码操纵？ Atomic包不够用？不得不难看且僭越地调用Unsafe？ 在框架源代码里见到MethodHandle而不是Method？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。">
+<meta property="og:image" content="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/flow.png">
+<meta property="article:published_time" content="2020-12-05T04:50:37.000Z">
+<meta property="article:modified_time" content="2020-12-05T11:52:14.082Z">
+<meta property="article:author" content="IlluminatedWorm">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/flow.png">
+
+
+<link rel="canonical" href="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Lambda表达式，invokedynamic指令和MethodHandle API（一） | IlluminatedWorm's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">IlluminatedWorm's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lambda的历史"><span class="nav-number">2.</span> <span class="nav-text">Lambda的历史</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lambda之力"><span class="nav-number">3.</span> <span class="nav-text">Lambda之力</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java中的实现方式"><span class="nav-number">4.</span> <span class="nav-text">Java中的实现方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#invokedynamic指令"><span class="nav-number">4.1.</span> <span class="nav-text">invokedynamic指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流程"><span class="nav-number">4.2.</span> <span class="nav-text">流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#启动方法"><span class="nav-number">4.2.1.</span> <span class="nav-text">启动方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LambdaMetafactory"><span class="nav-number">4.2.2.</span> <span class="nav-text">LambdaMetafactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MethodHandle实例"><span class="nav-number">4.2.3.</span> <span class="nav-text">MethodHandle实例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最后和疑问"><span class="nav-number">5.</span> <span class="nav-text">最后和疑问</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">IlluminatedWorm</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/illuminatedworm" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;illuminatedworm" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:609210163@qq.com" title="E-Mail → mailto:609210163@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Lambda表达式，invokedynamic指令和MethodHandle API（一）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-12-05 12:50:37 / 修改时间：19:52:14" itemprop="dateCreated datePublished" datetime="2020-12-05T12:50:37+08:00">2020-12-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>了解JVM底层，尤其是方法调用如何被执行，有什么用？</p>
+<p>反射很慢？改用ASM框架进行字节码操纵？</p>
+<p>Atomic包不够用？不得不难看且僭越地调用<code>Unsafe</code>？</p>
+<p>在框架源代码里见到<code>MethodHandle</code>而不是<code>Method</code>？</p>
+<p>一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。</p>
+<a id="more"></a>
+<p>主要参考资料：</p>
+<ul>
+<li>《深入理解Java虚拟机 JVM高级特性与最佳实践》</li>
+<li><a href="https://medium.com/@jpwang/deep-dive-into-java-lambda-0x02-a7cf51e1f0ed" target="_blank" rel="noopener">Deep dive into Java Lambda(0x02)</a></li>
+</ul>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>首先得明确一点，我同意《深入理解JVM虚拟机》一书所说的，Lambda表达式并不是理解invokedynamic指令的好方式这一说法。本博客虽然一直采用面向他人述说的行文手法，但其实是本人的总结性笔记本，远远没有提炼到科普甚至教材的程度，讲述的只是本人的学习经历与感悟，我个人确实是经此步入门径的，因此此系列文章的安排和顺序为个人学习过程的复现。</p>
+<h2 id="Lambda的历史"><a href="#Lambda的历史" class="headerlink" title="Lambda的历史"></a>Lambda的历史</h2><p>希腊字母<strong>λ</strong>，因为某著名经典游戏系列的缘故，该字母是最为人知的几个希腊字母之一。近一个世纪以前，某位数学家选择它为代称（并没有太多特别的原因），作为自己对数学基础研究的部分。再过了二十多年，Lambda演算才真正地在语言学和计算机科学中<em>有用起来</em>，逐渐发展出来我们程序员所了解的那些东西。一个经典的有用之物诞生自高深莫名之物的故事。</p>
+<p>即便在一些编程语言里早早地就有实现，但在函数式编程的力量在被肯定和得到重视后，各种编程语言才忙不迭地接纳了它。</p>
+<p>这不是一股无脑追逐潮流的风气，这当中，Java的表现应该最具有说服力。众所周知Java并不是一门经常添加语言特性的语言，但它不热衷此道并不代表它顽固保守，Java在近些年更新迭代迅速，而当你放眼望去，Java正在改进的大方向：语言表达能力，协程，原生……无一不确是重要无比，关乎未来趋势，Java不盲目接纳，但绝对认得清什么更重要，而当初关于Lambda的提案通过到落地实现（相对地）可谓迅速。</p>
+<h2 id="Lambda之力"><a href="#Lambda之力" class="headerlink" title="Lambda之力"></a>Lambda之力</h2><p>现在来点实际的东西，通过两个斐波那契数列生成的例子来看函数式编程和Lambda的力量，首先是一则Python实现（比较的不是编程语言）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(n)</span>:</span></span><br><span class="line">    a, b = <span class="number">0</span>, <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> range(n):</span><br><span class="line">        a, b = b, a + b</span><br><span class="line">        <span class="keyword">yield</span> a</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> fib(<span class="number">10</span>):</span><br><span class="line">    print(i, end=<span class="string">' '</span>)</span><br></pre></td></tr></table></figure>
+<p>这里选择Python是因为Python的代码已经足够简洁明了，其他语言的等价实现基本多少会比这更“扎眼”，接下来看一则调用<code>Stream</code>的<strong>Kotlin实现</strong>（再说一遍，这不是在比较编程语言，加粗是为了避免被误会为Java代码）：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> fib = Stream.iterate(Pair(<span class="number">0</span>, <span class="number">1</span>)) &#123;(a, b) -&gt;</span><br><span class="line">        Pair(b, a + b)</span><br><span class="line">    &#125;</span><br><span class="line">    fib.limit(<span class="number">10</span>)</span><br><span class="line">        .map &#123; it.first &#125;</span><br><span class="line">        .forEach &#123; print(<span class="string">"<span class="variable">$it</span> "</span>) &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>哪个更易读，一目了然。虽然第一个示例中的写法不能说完全是面向过程（用了<code>generator</code>），但与第二个示例的面向对象加函数式编程的差距仍然十分明显。在第一个示例中，一切几乎仍是计算机思维，而对于第二个示例，我怀疑对于一个从未学过计算机和编程的人也是能很容易猜测的（看得懂这几个单词），因为代码看起来非常地像是自然语言：“循环一对数，循环方式是<code>(a + b) -&gt; (b, a + b)</code>，只要十对数，映射成一对中的第一个数，打印它。”</p>
+<p>这就是Lambda的魅力：简单；易读；语义强大；图灵完备；模型良好；能且易于修改扩展。</p>
+<h2 id="Java中的实现方式"><a href="#Java中的实现方式" class="headerlink" title="Java中的实现方式"></a>Java中的实现方式</h2><p>实际上，只是想要运用<code>Stream</code>等API是非常简单的，看看文档，写几个小例子，踩踩闭包捕获的坑，没有什么特别之处。</p>
+<p>想要自己编写支持Lambda的方法，也是非常简单的，了解SAM（Single Abstract Method）接口，再看一遍java.util.function包即可，底层细节对于语法是完全透明的，非常友好。</p>
+<p>但我们仍然要深入一下。</p>
+<h3 id="invokedynamic指令"><a href="#invokedynamic指令" class="headerlink" title="invokedynamic指令"></a>invokedynamic指令</h3><p>必须明确一点，invokedynamic指令并非是特地为了Lambda表达式而加入的，它在JDK 7就引入了，而Lambda在JDK 8才落地，倒不如说是Lambda“顺便”用到了这条指令（在之后的JDK 9，<code>String</code>的加法重载也用到了它）。</p>
+<p>JVM自面世以来，甚少添加新的字节码指令，为了一个“语法糖”（Lambda严格地说确实是语法糖，虽然好像有些小觑的嫌疑……这个词被滥用真是太不好了）而添加更是不可能。这条指令服务于一个更大的愿景：为在JVM上实现动态语言提供便利。</p>
+<p>动态语言和静态语言的本质区别在于，前者的哲学是变量无类型，变量的值才有类型，而变量的值显然只有在真正运行的时候才能确定，在动态语言中，<code>obj.method()</code>只要这个对象真的有一个符合的方法就能运行（通常被称为Duck Typing），而在静态语言中不一样，就Java而言，如果你查看字节码，就会发现所有方法调用都包含着非常完整的符号引用（来自上文第二个示例）：</p>
+<blockquote>
+<p>5: invokestatic  #17                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;</p>
+</blockquote>
+<p>在这种情况下即使对象确实有一个符合的方法，但只要不是来自指定的类型，那就不能通过检查。在Java中很难做出一个能说明问题的反例，并且这种区别更多地是来源于人为设定而不是客观真理的指导（所以用到了“前者的哲学”这种说法），所以某些情况下确实难理解。</p>
+<p>另外注意“静态”和“动态”是相对的，是需要上下文的。对于invokestatic和invokespecial而言，就是纯粹的静态，因为前者调用静态方法，后者调用构造器，私有方法和父类方法，这些方法不参与重写，顶多就是重载（而重载是可以“静态”解决的），也称“非虚方法”。对于invokeinterface和invokevirtual而言，则有那么一些“动态”在里面，前者调用接口的方法，在运行时查找恰当的实现类的方法，后者调用虚方法（除了上述的非虚方法，Java中其他方法默认就是虚方法，来自C++的概念），在运行时根据规则查找正确的方法，以实现你我熟知的重写。</p>
+<p>即便老指令也有那么一些“动态”在里面，对于动态语言来说远远不够，这四条指令的共同点：<strong>分派逻辑固化于JVM内部；在编译时明确到哪个类型的哪个方法。</strong>这就导致在JVM里实现动态语言不得不走很多弯路，比如，可以用某个接口的某个方法来当占位符，在运行时动态的生成类作为实现，而如此做法在性能和实现难易度方面都十分令人尴尬。</p>
+<p>因此invokedynamic指令被引入，它所实现的功能的意图用人话来说就是，“方法解析分派的事儿，我（编译器）不管不查了，虚拟机和用户你们自己看着办吧”。这里的用户自然包括了动态语言的实现者们。</p>
+<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><img src="/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/flow.png" class="" title="flow">
+<p>省略一些细节，大体过程如此：</p>
+<ol>
+<li>invokedynamic指令指向并调用一个启动方法（Bootstrap Method）；</li>
+<li>启动方法调用来自<code>LambdaMetafactory</code>类的方法；</li>
+<li>上一步将返回一个<code>CallSite</code>对象</li>
+<li>获取<code>CallSite</code>包装的<code>MethodHandle</code>对象，调用之。</li>
+</ol>
+<p><code>CallSite</code>对象将在之后的调用中复用。</p>
+<p>接下来，以以前文章用过的一段代码（稍有变化）为具象参考进行字节码和反编译代码的解读（）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ArrayList&lt;String&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">list.add(<span class="string">"cat"</span>);list.add(<span class="string">"dog"</span>);list.add(<span class="string">"pig"</span>);</span><br><span class="line">list.add(<span class="string">"olIve"</span>);list.add(<span class="string">"pinK"</span>);list.add(<span class="string">"silVer"</span>);</span><br><span class="line">list.stream()</span><br><span class="line">    .filter(s -&gt; s.length() &gt; <span class="number">3</span>)</span><br><span class="line">    .map(s -&gt; s.substring(<span class="number">0</span>, <span class="number">1</span>).toUpperCase() + s.substring(<span class="number">1</span>).toLowerCase())</span><br><span class="line">    .sorted()</span><br><span class="line">    .forEach(s -&gt; System.out.println(s + args[<span class="number">0</span>]));</span><br></pre></td></tr></table></figure>
+<p>本人所用JDK信息：</p>
+<blockquote>
+<p>openjdk version “11” 2018-09-25<br>OpenJDK Runtime Environment 18.9 (build 11+28)<br>OpenJDK 64-Bit Server VM 18.9 (build 11+28, mixed mode)</p>
+</blockquote>
+<h4 id="启动方法"><a href="#启动方法" class="headerlink" title="启动方法"></a>启动方法</h4><p>在main方法的Code属性里，我们可以找到第一条invokedynamic指令：</p>
+<blockquote>
+<p>68: invokedynamic #12,  0             // InvokeDynamic #0:test:()Ljava/util/function/Predicate;<br>73: invokeinterface #13,  2           // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;</p>
+</blockquote>
+<p>这两行对应着第5行源代码，invokedynamic的第一个参数是InvokeDynamic类型的常量，这个常量指向#0启动方法和一个能解析为方法全限定名“java.util.function.Predicate.test”的NameAndType类型的常量。</p>
+<p>查看BootstrapMethods属性可以看到：</p>
+<blockquote>
+<p>  0: #65 REF_invokeStatic java/lang/invoke/LambdaMetafactory.metafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;<br>    Method arguments:</p>
+<pre><code>  #66 (Ljava/lang/Object;)Z
+  #67 REF_invokeStatic LambdaTestCase.lambda$main$0:(Ljava/lang/String;)Z
+  #68 (Ljava/lang/String;)Z
+</code></pre></blockquote>
+<p>大把的符号引用，表示这个启动方法调用“java.lang.invoke.LambdaMetafactory.metafactory”方法，并且向它传递了几个特定参数。</p>
+<h4 id="LambdaMetafactory"><a href="#LambdaMetafactory" class="headerlink" title="LambdaMetafactory"></a>LambdaMetafactory</h4><p>找到这个<code>LambdaMetafactory::metafactory</code>，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> CallSite <span class="title">metafactory</span><span class="params">(MethodHandles.Lookup caller,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   String invokedName,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   MethodType invokedType,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   MethodType samMethodType,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   MethodHandle implMethod,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   MethodType instantiatedMethodType)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> LambdaConversionException </span>&#123;</span><br><span class="line">    AbstractValidatingLambdaMetafactory mf;</span><br><span class="line">    mf = <span class="keyword">new</span> InnerClassLambdaMetafactory(caller, invokedType,</span><br><span class="line">                                         invokedName, samMethodType,</span><br><span class="line">                                         implMethod, instantiatedMethodType,</span><br><span class="line">                                         <span class="keyword">false</span>, EMPTY_CLASS_ARRAY, EMPTY_MT_ARRAY);</span><br><span class="line">    mf.validateMetafactoryArgs();</span><br><span class="line">    <span class="keyword">return</span> mf.buildCallSite();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关注参数，根据注释与BootstrapMethods属性的信息，我们可以知道，如下信息被此方法获得：</p>
+<ul>
+<li>invokeName和invokeType：信息来源于相应的SAM接口：方法名，是否为实例方法（如果是，将捕获实例作为第一个参数），捕获闭包外的变量（此行源代码未发生捕获，稍后会谈）类型，返回值类型。对应上文的“#68 (Ljava/lang/String;)Z”（注意，即使捕获发生了，这里不会包括被捕获变量的信息）。</li>
+<li>samMethodType：同样的，信息来源于SAM接口，然而是直接照搬，并不做改动。对应上文的“#66 (Ljava/lang/Object;)Z”。<code>Predicate::test(T t)</code>在类型擦除后自然会有<code>Object</code>类型的参数</li>
+<li>implMethod：一个<code>MethodHandle</code>对象，代表着实际被调用的方法，包含着被捕获变量。</li>
+</ul>
+<p>这个方法里的信息很多，但那些都是虚拟机才要去关心的事情，我们可以大概地知道，前两项是为了处理SAM接口和实际调用的对接，这样才能向用户屏蔽这些底层细节，用户所写的代码中，以SAM接口为参数就可以接受Lambda表达式，调用SAM接口的方法就能获得结果，完全不会涉及本文所述的种种内容。</p>
+<p>而至于第三项比较重要，先来想一个问题，第五行源代码中的Lambda表达式虽然不长，但也有着自己的方法体<code>s -&gt; s.length() &gt; 3</code>，这段方法被保存到哪里去了呢？一点也不神秘，在“#67 REF_invokeStatic LambdaTestCase.lambda$main$0:(Ljava/lang/String;)Z”中已经表明，我们查看可以发现这是一个机器生成的私有方法：</p>
+<blockquote>
+<p>  private static boolean lambda$main$0(java.lang.String);<br>    descriptor: (Ljava/lang/String;)Z<br>    flags: (0x100a) ACC_PRIVATE, ACC_STATIC, ACC_SYNTHETIC<br>    Code:<br>      stack=2, locals=1, args_size=1<br>         0: aload_0<br>         1: invokevirtual #26                 // Method java/lang/String.length:()I<br>         4: iconst_3<br>         5: if_icmple     12<br>         8: iconst_1<br>         9: goto          13<br>        12: iconst_0<br>        13: ireturn</p>
+</blockquote>
+<p>实在找不到一款可以以独立方法形式查看这些生成方法的反编译器，就看字节码吧，不过方法体很简单，很容易看出来确实就是就是对应的代码。这段信息也被<code>LambdaMetafactory::metafactory</code>获得，用于生成<code>MethodHandle</code>实例。</p>
+<p>你可能会好奇既然<code>MethodHandle</code>实例代表着方法，捕获变量保存为它的字段，调用后实际发挥作用的也是它，那么为什么会需要<code>CallSite</code>呢？自然是因为这个API就是这么设计的，<code>CallSite</code>代表着<code>MethodHandle</code>的占位符，确保invokedynamic指令在编译期就知道自己也是会连接着东西的，<code>MethodHandle</code>顾名思义是方法的句柄，而<code>CallSite</code>就是由invokedynamic持有的句柄的句柄……</p>
+<h4 id="MethodHandle实例"><a href="#MethodHandle实例" class="headerlink" title="MethodHandle实例"></a>MethodHandle实例</h4><p>既然已经知道运行时会有具体的<code>MethodHandle</code>实例存在，而且<code>InnerClassLambdaMetafactory</code>这个类名也暗示着某种我们熟悉的存在，那么到底能不能亲眼见见这个神秘的对象呢？答案是，可以。</p>
+<p>加入虚拟机参数“-Djdk.internal.lambda.dumpProxyClasses”就可以一窥这些神秘类的真面目，就上述示例代码而言，会生成三个class文件，对应着源代码中的<code>.forEach(s -&gt; System.out.println(s + args[0]))</code>，因为这段Lambda表达式捕获了<code>args[0]</code>这个闭包外的变量进来。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 反编译工具：JADX-GUI。如果喜欢也可以就用IDEA。</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.invoke.LambdaForm;</span><br><span class="line"><span class="keyword">import</span> java.util.function.Consumer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* renamed from: LambdaTestCase$$Lambda$16  reason: default package */</span></span><br><span class="line"><span class="keyword">final</span> <span class="comment">/* synthetic */</span> <span class="class"><span class="keyword">class</span> <span class="title">LambdaTestCase</span>$$<span class="title">Lambda</span>$16 <span class="keyword">implements</span> <span class="title">Consumer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String[] arg$<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> LambdaTestCase$$Lambda$<span class="number">16</span>(String[] strArr) &#123;</span><br><span class="line">        <span class="keyword">this</span>.arg$<span class="number">1</span> = strArr;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Consumer get$Lambda(String[] strArr) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> LambdaTestCase$$Lambda$<span class="number">16</span>(strArr);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@LambdaForm</span>.Hidden</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">accept</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">        LambdaTestCase.lambda$main$<span class="number">2</span>(<span class="keyword">this</span>.arg$<span class="number">1</span>, (String) obj);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>了无秘密，简单明白，并且我们可以理解为什么Lambda表达式捕获的变量被要求是“实质<code>final</code>变量”，因为Java中的参数传递是值传递（引用类型也是引用的副本），与原本的变量并不指向同一个内存地址，经此一捕获，原变量和被捕获变量本质就不是同一片变量，为了维持一致性，才有了“实质<code>final</code>变量”的规定。</p>
+<h2 id="最后和疑问"><a href="#最后和疑问" class="headerlink" title="最后和疑问"></a>最后和疑问</h2><p>现在，你可能会好奇，既然这种实现连JDK自己都说是inner-class-like，那这种复杂的实现，相比直接做成匿名内部类，到底有什么好处呢？确实，在非常早期的技术测试时，Java的Lambda表达式就是匿名内部类来实现的，这种做法才是纯粹的语法糖，后来才改成了这种方式。需要记住，匿名内部类在编译时就已经生成，这过于“静态”，而现在的实现方式的主体都集中在运行时，获得了充分的“动态”的自由。</p>
+<p>如果观察仔细，就会发现<code>LambdaMetafactory</code>里还有个方法叫<code>altMetafactory</code>，这是用于生成可序列化Lambda表达式的方法，而在本文的示例却没有启动方法调用的是这个方法。像是这样的情况，虚拟机就可以在运行时自行决定具体实现，如果选择匿名内部类的话则不能这么做。</p>
+<p>并且这里分享<a href="https://www.zhihu.com/question/51491241" target="_blank" rel="noopener">一个关于方法引用，变量捕获和序列化的坑</a>，你认为<code>s -&gt; System.out.println(s)</code>和<code>(System.out::println)</code>有区别吗？</p>
+<p>另外，<code>CallSite</code>所包装的<code>MethodHandle</code>对象是可以更换的，而<code>MethodHandle</code>也是一个非常灵活的API，也许在Lambda表达式中运用这些灵活性非常罕见，但程序正是如此，可扩展性非常重要。</p>
+<p>最后的最后，也许你还可能怀疑这种实现的性能如何，实际上有很多针对Java的Lambda性能的研究和基准测试，共识的答案是：还好，没有问题。这一部分得益于<code>MethodHandle</code>的高性能，后续文章我们会来研究这个API。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/JVM/" rel="tag"># JVM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/11/20/JSR-133%EF%BC%8Cvolatile%EF%BC%8C%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" rel="prev" title="JSR-133，volatile，单例模式">
+                  <i class="fa fa-chevron-left"></i> JSR-133，volatile，单例模式
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">IlluminatedWorm</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+      
+
+
+
+
+
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

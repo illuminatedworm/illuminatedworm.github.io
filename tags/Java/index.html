@@ -24,13 +24,13 @@
 
   <meta property="og:type" content="website">
 <meta property="og:title" content="IlluminatedWorm&#39;s Blog">
-<meta property="og:url" content="http://yoursite.com/tags/Java/index.html">
+<meta property="og:url" content="http://yoursite.com/tags/java/index.html">
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
 <meta property="article:author" content="IlluminatedWorm">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="http://yoursite.com/tags/Java/">
+<link rel="canonical" href="http://yoursite.com/tags/java/">
 
 
 <script class="page-configurations">
@@ -43,7 +43,7 @@
   };
 </script>
 
-  <title>标签: Java | IlluminatedWorm's Blog</title>
+  <title>标签: java | IlluminatedWorm's Blog</title>
   
 
 
@@ -155,7 +155,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -207,7 +207,7 @@
   <div class="post-block">
     <div class="posts-collapse">
       <div class="collection-title">
-        <h2 class="collection-header">Java
+        <h2 class="collection-header">java
           <small>标签</small>
         </h2>
       </div>
@@ -221,15 +221,15 @@
     <header class="post-header">
       <div class="post-meta">
         <time itemprop="dateCreated"
-              datetime="2020-11-20T15:23:57+08:00"
-              content="2020-11-20">
-          11-20
+              datetime="2020-10-23T13:34:41+08:00"
+              content="2020-10-23">
+          10-23
         </time>
       </div>
 
       <div class="post-title">
-          <a class="post-title-link" href="/2020/11/20/JSR-133%EF%BC%8Cvolatile%EF%BC%8C%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" itemprop="url">
-            <span itemprop="name">JSR-133，volatile，单例模式</span>
+          <a class="post-title-link" href="/2020/10/23/Stream%E7%B1%BB%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" itemprop="url">
+            <span itemprop="name">Stream类实现原理</span>
           </a>
       </div>
 
@@ -237,38 +237,102 @@
     </header>
   </article>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-10-11T19:34:06+08:00"
-              content="2020-10-11">
-          10-11
-        </time>
-      </div>
+    </div>
+  </div>
+  
+  
+  
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/10/11/HashMap%E5%AE%B9%E9%87%8F%E8%83%8C%E5%90%8E%E7%9A%84%E4%BA%89%E8%AE%BA/" itemprop="url">
-            <span itemprop="name">HashMap容量背后的争论</span>
-          </a>
-      </div>
+  
+
+
 
       
-    </header>
-  </article>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-10-01T22:04:05+08:00"
-              content="2020-10-01">
-          10-01
-        </time>
-      </div>
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/" itemprop="url">
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">IlluminatedWorm</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+      
+
+
+
+
+
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
+a class="post-title-link" href="/2020/10/01/%E5%BC%82%E6%AD%A5%E4%B8%8E%E5%90%8C%E6%AD%A5%EF%BC%8C%E9%98%BB%E5%A1%9E%E4%B8%8E%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%8C%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C/" itemprop="url">
             <span itemprop="name">异步与同步，阻塞与非阻塞，并发与并行</span>
           </a>
       </div>
@@ -390,26 +454,6 @@
       <div class="post-title">
           <a class="post-title-link" href="/2020/09/05/%E4%BB%8E%E5%AD%97%E8%8A%82%E7%A0%81%E6%96%87%E4%BB%B6%E7%9C%8BString%E7%9A%84%E5%8A%A0%E6%B3%95%E9%87%8D%E8%BD%BD/" itemprop="url">
             <span itemprop="name">从字节码文件看String的加法重载</span>
-          </a>
-      </div>
-
-      
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-08-19T23:06:38+08:00"
-              content="2020-08-19">
-          08-19
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/08/19/%E7%94%A8Optional%E5%81%9A%E9%80%BB%E8%BE%91%E5%88%A4%E6%96%AD%E7%9A%84%E5%AE%9E%E4%BE%8B%E4%B8%A4%E5%88%99/" itemprop="url">
-            <span itemprop="name">用Optional做逻辑判断的实例两则</span>
           </a>
       </div>
 
