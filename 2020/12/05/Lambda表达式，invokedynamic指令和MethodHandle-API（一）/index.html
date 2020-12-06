@@ -22,15 +22,15 @@
     var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
   </script>
 
-  <meta name="description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。">
+  <meta name="description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。 主要参考资料：  《深入理解Java虚拟机 JVM高级特性与最佳实践》 Deep dive into Java Lambda(0x02)">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Lambda表达式，invokedynamic指令和MethodHandle API（一）">
 <meta property="og:url" content="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
-<meta property="og:description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。">
+<meta property="og:description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。 主要参考资料：  《深入理解Java虚拟机 JVM高级特性与最佳实践》 Deep dive into Java Lambda(0x02)">
 <meta property="og:image" content="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/flow.png">
 <meta property="article:published_time" content="2020-12-05T04:50:37.000Z">
-<meta property="article:modified_time" content="2020-12-06T03:25:55.923Z">
+<meta property="article:modified_time" content="2020-12-06T03:32:45.022Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="JVM">
@@ -247,7 +247,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-06 11:25:55" itemprop="dateModified" datetime="2020-12-06T11:25:55+08:00">2020-12-06</time>
+                <time title="修改时间：2020-12-06 11:32:45" itemprop="dateModified" datetime="2020-12-06T11:32:45+08:00">2020-12-06</time>
               </span>
 
           
@@ -261,12 +261,12 @@
     <div class="post-body" itemprop="articleBody">
         <p>了解JVM底层，尤其是方法调用如何被执行，有什么用？</p>
 <p>一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。</p>
-<a id="more"></a>
 <p>主要参考资料：</p>
 <ul>
 <li>《深入理解Java虚拟机 JVM高级特性与最佳实践》</li>
 <li><a href="https://medium.com/@jpwang/deep-dive-into-java-lambda-0x02-a7cf51e1f0ed" target="_blank" rel="noopener">Deep dive into Java Lambda(0x02)</a></li>
 </ul>
+<a id="more"></a>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>首先得明确一点，我同意《深入理解JVM虚拟机》一书所说的，Lambda表达式并不是理解invokedynamic指令的好方式这一说法。本博客虽然一直采用面向他人述说的行文手法，但其实是本人的总结性笔记本，远远没有提炼到科普甚至教材的程度，讲述的只是本人的学习经历与感悟，我个人确实是经此步入门径的，因此此系列文章的安排和顺序为个人学习过程的复现。</p>
 <h2 id="Lambda的历史"><a href="#Lambda的历史" class="headerlink" title="Lambda的历史"></a>Lambda的历史</h2><p>希腊字母<strong>λ</strong>，因为某著名经典游戏系列的缘故，该字母是最为人知的几个希腊字母之一。近一个世纪以前，某位数学家选择它为代称（并没有太多特别的原因），作为自己对数学基础研究的部分。再过了二十多年，Lambda演算才真正地在语言学和计算机科学中<em>有用起来</em>，逐渐发展出来我们程序员所了解的那些东西。一个经典的有用之物诞生自高深莫名之物的故事。</p>
 <p>即便在一些编程语言里早早地就有实现，但在函数式编程的力量在被肯定和得到重视后，各种编程语言才忙不迭地接纳了它。</p>
@@ -312,10 +312,10 @@
 <p>这两行对应着第5行源代码，invokedynamic的第一个参数是InvokeDynamic类型的常量，这个常量指向#0启动方法和一个能解析为方法全限定名“java.util.function.Predicate.test”的NameAndType类型的常量。</p>
 <p>查看BootstrapMethods属性可以看到：</p>
 <blockquote>
-<p>  0: #65 REF_invokeStatic java/lang/invoke/LambdaMetafactory.metafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;<br>    Method arguments:</p>
-<pre><code>  #66 (Ljava/lang/Object;)Z
-  #67 REF_invokeStatic LambdaTestCase.lambda$main$0:(Ljava/lang/String;)Z
-  #68 (Ljava/lang/String;)Z
+<p>  0: #65 REF_invokeStatic java/lang/invoke/LambdaMetafactory.metafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;<br>   Method arguments:</p>
+<pre><code>#66 (Ljava/lang/Object;)Z
+#67 REF_invokeStatic LambdaTestCase.lambda$main$0:(Ljava/lang/String;)Z
+#68 (Ljava/lang/String;)Z
 </code></pre></blockquote>
 <p>大把的符号引用，表示这个启动方法调用“java.lang.invoke.LambdaMetafactory.metafactory”方法，并且向它传递了几个特定参数。</p>
 <h4 id="LambdaMetafactory"><a href="#LambdaMetafactory" class="headerlink" title="LambdaMetafactory"></a>LambdaMetafactory</h4><p>找到这个<code>LambdaMetafactory::metafactory</code>，如下：</p>
