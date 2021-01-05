@@ -22,15 +22,15 @@
     var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
   </script>
 
-  <meta name="description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。 主要参考资料：  《深入理解Java虚拟机 JVM高级特性与最佳实践》 Deep dive into Java Lambda(0x02)">
+  <meta name="description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Lambda表达式，invokedynamic指令和MethodHandle API（一）">
 <meta property="og:url" content="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
 <meta property="og:site_name" content="IlluminatedWorm&#39;s Blog">
-<meta property="og:description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。 主要参考资料：  《深入理解Java虚拟机 JVM高级特性与最佳实践》 Deep dive into Java Lambda(0x02)">
+<meta property="og:description" content="了解JVM底层，尤其是方法调用如何被执行，有什么用？ 一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。">
 <meta property="og:image" content="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/flow.png">
 <meta property="article:published_time" content="2020-12-05T04:50:37.000Z">
-<meta property="article:modified_time" content="2020-12-06T03:32:45.022Z">
+<meta property="article:modified_time" content="2021-01-02T10:40:41.748Z">
 <meta property="article:author" content="IlluminatedWorm">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="JVM">
@@ -164,7 +164,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -247,7 +247,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-06 11:32:45" itemprop="dateModified" datetime="2020-12-06T11:32:45+08:00">2020-12-06</time>
+                <time title="修改时间：2021-01-02 18:40:41" itemprop="dateModified" datetime="2021-01-02T18:40:41+08:00">2021-01-02</time>
               </span>
 
           
@@ -261,12 +261,12 @@
     <div class="post-body" itemprop="articleBody">
         <p>了解JVM底层，尤其是方法调用如何被执行，有什么用？</p>
 <p>一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。</p>
+<a id="more"></a>
 <p>主要参考资料：</p>
 <ul>
 <li>《深入理解Java虚拟机 JVM高级特性与最佳实践》</li>
 <li><a href="https://medium.com/@jpwang/deep-dive-into-java-lambda-0x02-a7cf51e1f0ed" target="_blank" rel="noopener">Deep dive into Java Lambda(0x02)</a></li>
 </ul>
-<a id="more"></a>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>首先得明确一点，我同意《深入理解JVM虚拟机》一书所说的，Lambda表达式并不是理解invokedynamic指令的好方式这一说法。本博客虽然一直采用面向他人述说的行文手法，但其实是本人的总结性笔记本，远远没有提炼到科普甚至教材的程度，讲述的只是本人的学习经历与感悟，我个人确实是经此步入门径的，因此此系列文章的安排和顺序为个人学习过程的复现。</p>
 <h2 id="Lambda的历史"><a href="#Lambda的历史" class="headerlink" title="Lambda的历史"></a>Lambda的历史</h2><p>希腊字母<strong>λ</strong>，因为某著名经典游戏系列的缘故，该字母是最为人知的几个希腊字母之一。近一个世纪以前，某位数学家选择它为代称（并没有太多特别的原因），作为自己对数学基础研究的部分。再过了二十多年，Lambda演算才真正地在语言学和计算机科学中<em>有用起来</em>，逐渐发展出来我们程序员所了解的那些东西。一个经典的有用之物诞生自高深莫名之物的故事。</p>
 <p>即便在一些编程语言里早早地就有实现，但在函数式编程的力量在被肯定和得到重视后，各种编程语言才忙不迭地接纳了它。</p>
@@ -274,8 +274,8 @@
 <h2 id="Lambda之力"><a href="#Lambda之力" class="headerlink" title="Lambda之力"></a>Lambda之力</h2><p>现在来点实际的东西，通过两个斐波那契数列生成的例子来看函数式编程和Lambda的力量，首先是一则Python实现（比较的不是编程语言）：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(n)</span>:</span></span><br><span class="line">    a, b = <span class="number">0</span>, <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> range(n):</span><br><span class="line">        a, b = b, a + b</span><br><span class="line">        <span class="keyword">yield</span> a</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> fib(<span class="number">10</span>):</span><br><span class="line">    print(i, end=<span class="string">' '</span>)</span><br></pre></td></tr></table></figure>
 <p>这里选择Python是因为Python的代码已经足够简洁明了，其他语言的等价实现基本多少会比这更“扎眼”，接下来看一则调用<code>Stream</code>的<strong>Kotlin实现</strong>（再说一遍，这不是在比较编程语言，加粗是为了避免被误会为Java代码）：</p>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> fib = Stream.iterate(Pair(<span class="number">0</span>, <span class="number">1</span>)) &#123;(a, b) -&gt;</span><br><span class="line">        Pair(b, a + b)</span><br><span class="line">    &#125;</span><br><span class="line">    fib.limit(<span class="number">10</span>)</span><br><span class="line">        .map &#123; it.first &#125;</span><br><span class="line">        .forEach &#123; print(<span class="string">"<span class="variable">$it</span> "</span>) &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>哪个更易读，一目了然。虽然第一个示例中的写法不能说完全是面向过程（用了<code>generator</code>），但与第二个示例的面向对象加函数式编程的差距仍然十分明显。在第一个示例中，一切几乎仍是计算机思维，而对于第二个示例，我怀疑对于一个从未学过计算机和编程的人也是能很容易猜测的（看得懂这几个单词和有一些数学能力），因为代码看起来非常地像是自然语言：“循环一对数，循环方式是<code>(a + b) -&gt; (b, a + b)</code>，只要十对数，映射成一对中的第一个数，打印它。”</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    println(fib(<span class="number">10</span>).joinToString())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">fib</span><span class="params">(n: <span class="type">Int</span>)</span></span> = generateSequence(Pair(<span class="number">0</span>, <span class="number">1</span>)) &#123; (a, b) -&gt;</span><br><span class="line">    Pair(b, a + b)</span><br><span class="line">&#125;.take(<span class="number">10</span>).map &#123; it.first &#125;</span><br></pre></td></tr></table></figure>
+<p>哪个更易读，一目了然。虽然第一个示例中的写法不能说完全是面向过程（用了<code>generator</code>），但与第二个示例的面向对象加函数式编程的差距仍然十分明显。在第一个示例中，一切几乎仍是计算机思维，而对于第二个示例，我怀疑对于一个从未学过计算机和编程的人也是能很容易猜测的（看得懂这几个单词和有一些数学能力），因为代码看起来非常地像是自然语言：“以（0，1）为基础产生一系列数，循环方式是<code>(a + b) -&gt; (b, a + b)</code>，只要十对数，映射成一对中的第一个数，打印它。”</p>
 <p>这就是Lambda的魅力：简单，易读，语义强大，图灵完备，模型良好，能且易于修改扩展。</p>
 <h2 id="Java中的实现方式"><a href="#Java中的实现方式" class="headerlink" title="Java中的实现方式"></a>Java中的实现方式</h2><p>实际上，只是想要运用<code>Stream</code>等API是非常简单的，看看文档，写几个小例子，没有什么特别之处。</p>
 <p>想要自己编写支持Lambda的方法，也是非常简单的，了解SAM（Single Abstract Method）接口，再看一遍java.util.function包即可，底层细节对于语法是完全透明的，非常友好。</p>
@@ -340,7 +340,7 @@
 <h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>现在，你可能会好奇，既然这种实现连JDK自己都说是inner-class-like，那这种复杂的实现，相比直接做成匿名内部类，到底有什么好处呢？确实，在非常早期的技术测试时，Java的Lambda表达式就是匿名内部类来实现的，这种做法才是毫无疑问的语法糖，后来才改成了这种方式。需要记住，匿名内部类在编译时就已经生成，这过于“静态”，而现在的实现方式的主体都集中在运行时，获得了充分的“动态”的自由（如果你还是感到这种实现有些奇怪，那某种程度上你的直觉还挺敏锐，这是JVM里一个不那么完善的地方，<a href="https://www.zhihu.com/question/51132462/answer/124751186" target="_blank" rel="noopener">见此知乎问答</a>和<a href="https://openjdk.java.net/jeps/371" target="_blank" rel="noopener">此提案</a>）。</p>
 <p>如果观察仔细，就会发现<code>LambdaMetafactory</code>里还有个方法叫<code>altMetafactory</code>，这是用于生成可序列化Lambda表达式的方法，而在本文的示例却没有启动方法调用的是这个方法。像是这样的情况，虚拟机就可以在运行时自行决定具体实现，如果选择匿名内部类的话则会束手束脚。</p>
 <p>并且这里分享<a href="https://www.zhihu.com/question/51491241" target="_blank" rel="noopener">一个关于方法引用，变量捕获和序列化的坑</a>，你认为<code>s -&gt; System.out.println(s)</code>和<code>(System.out::println)</code>有区别吗？</p>
-<p>另外，<code>CallSite</code>所包装的<code>MethodHandle</code>对象是可以更换的，而<code>MethodHandle</code>也是一个非常灵活的API，也许在Lambda表达式中运用这些灵活性非常罕见，但程序正是如此，可扩展性非常重要。</p>
+<p>另外，<code>CallSite</code>所包装的<code>MethodHandle</code>对象是可以更换的，而<code>MethodHandle</code>也是一个非常灵活的API，也许对于Lambda表达式永远也用不到这种灵活性（实际上，目前invokedynamic指令固定连接到<code>ConstantCallSite</code>，这是一种固定的，不可变的<code>CallSite</code>实现），但程序正是如此，可扩展性非常重要。</p>
 <p>最后的最后，也许你还可能怀疑这种实现的性能如何，实际上有很多针对Java的Lambda性能的研究和基准测试，共识的答案是：还好，没有问题，偶尔需要小心。这一部分得益于<code>MethodHandle</code>的高性能，后续文章我们会来研究这个API。</p>
 
     </div>
@@ -364,6 +364,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2021/01/05/%E6%B1%82%E4%BC%97%E6%95%B0%EF%BC%8C%E4%B8%80%E6%AC%A1%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E5%AE%9E%E8%B7%B5/" rel="next" title="求众数，一次函数式编程实践">
+                  求众数，一次函数式编程实践 <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
       </footer>
@@ -411,7 +414,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2020</span>
+  <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

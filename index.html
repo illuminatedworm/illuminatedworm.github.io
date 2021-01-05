@@ -155,7 +155,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -204,6 +204,96 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/05/%E6%B1%82%E4%BC%97%E6%95%B0%EF%BC%8C%E4%B8%80%E6%AC%A1%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="IlluminatedWorm">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IlluminatedWorm's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/05/%E6%B1%82%E4%BC%97%E6%95%B0%EF%BC%8C%E4%B8%80%E6%AC%A1%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E5%AE%9E%E8%B7%B5/" class="post-title-link" itemprop="url">求众数，一次函数式编程实践</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-05 14:13:08 / 修改时间：15:38:43" itemprop="dateCreated datePublished" datetime="2021-01-05T14:13:08+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><blockquote>
+<p>求取并返回一个数组中重复出现最多次的数字，例如：输入 {1, 1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 7, 8, 9, 1}，返回1。</p>
+</blockquote>
+<p>在技术交流群看到别人在做这样的一道算法题。这道题的描述并不完全，其示例容易误导人以为数组的数字只有个位数，并且根据这样虚假的前置条件开始构思。</p>
+<p>例如做题人就是这么实现的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 有逻辑漏洞</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">countThenMaxOf</span><span class="params">(<span class="keyword">int</span>[] intArray)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] flags = <span class="keyword">new</span> <span class="keyword">int</span>[intArray.length];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i : intArray)</span><br><span class="line">        flags[i]++;</span><br><span class="line">    <span class="keyword">int</span> indexOfMax = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; flags.length; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flags[i] &gt;= flags[indexOfMax])</span><br><span class="line">            indexOfMax = i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> intArray[indexOfMax];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>之所以说有逻辑漏洞，请设想这种情况：输入{1, 2, 9999}。改进方法是将flags的长度设为输入数组中的最大值。</p>
+<p>然而我一开始看到的时候也并没有意识到对题目的误解和这种实现的漏洞，也没有意识到这就是所谓的“取众数”，我最初的想法仅仅是转写一份函数式的实现，练练手玩。</p>
+<h2 id="函数式实现和改进过程"><a href="#函数式实现和改进过程" class="headerlink" title="函数式实现和改进过程"></a>函数式实现和改进过程</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第一版</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">func0</span><span class="params">(<span class="keyword">int</span>[] intArray)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Arrays.stream(intArray)</span><br><span class="line">            .boxed()</span><br><span class="line">            .collect(Collectors.toMap(</span><br><span class="line">                    Function.identity(),</span><br><span class="line">                    i -&gt; <span class="number">1</span>,</span><br><span class="line">                    (oldValue, newValue) -&gt; oldValue++</span><br><span class="line">            )).entrySet().stream()</span><br><span class="line">            .max(Comparator.comparingLong(Map.Entry::getValue))</span><br><span class="line">            .map(Map.Entry::getKey)</span><br><span class="line">            .orElseThrow();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>会转变成用散列表来实现是再自然不过，即使想要对原本的做法依样画葫芦，因为<code>Stream</code>的API的缘故也会自然放弃。</p>
+<p>实现过程中我发现<code>int[]</code>只能自然地转变为<code>IntStream</code>，而<code>IntStream</code>对<code>Collectors.toMap</code>来说很不友好，类型推断基本失去作用，只能经由<code>Stream::boxed</code>装箱为<code>Stream&lt;Integer&gt;</code>再执行下去。</p>
+<p>随后我意识到带有mergeFunction的toMap并不是最好的做法：<code>(oldValue, newValue) -&gt; oldValue++</code>中<code>newValue</code>根本没有发挥任何作用，看起来比较突兀。于是诞生了第二版。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第二版</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">func1</span><span class="params">(<span class="keyword">int</span>[] intArray)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Arrays.stream(intArray)</span><br><span class="line">            .boxed()</span><br><span class="line">            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))</span><br><span class="line">            .entrySet().stream()</span><br><span class="line">            .max(Comparator.comparingLong(Map.Entry::getValue))</span><br><span class="line">            .map(Map.Entry::getKey)</span><br><span class="line">            .orElseThrow();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除非要对重复键映射得到的值进行复杂的合并操作，否则groupingBy方法总是比toMap更恰当。然后我又发现，总览整段代码，由于collect方法是终结方法，并且只得到了包含结果的集合而不是结果本身，之后不得不再手动开启另一个<code>Stream</code>，仿佛<code>Stream</code>在中途折断成两截，感觉有些不自然。</p>
+<p>稍作<em>“改进</em>”：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 不要这么做！！！</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">func2</span><span class="params">(<span class="keyword">int</span>[] intArray)</span> </span>&#123;</span><br><span class="line">    ArrayList&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;(intArray.length);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i : intArray)</span><br><span class="line">        list.add(i);</span><br><span class="line">    <span class="keyword">return</span> list.stream()</span><br><span class="line">            .reduce(BinaryOperator.maxBy(</span><br><span class="line">                    Comparator.comparingInt(i -&gt; Collections.frequency(list, i))))</span><br><span class="line">            .orElseThrow();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>int[]</code>不能足够优雅地转换成<code>Stream&lt;Integer&gt;</code>的问题仍如鲠在喉，并且因为需要再次引用原集合，还得将其声明出来。并且这种做法其实是自作聪明，在流的迭代中调用<code>Collections::frequency</code>再次迭代，将这段代码的时间复杂度提高到了平方级，而之前两种方法都是线性级。虽然看起来更<em>简短</em>，但<strong>千万不要这么做</strong>，可读性暂且不提，时间复杂度已经是硬伤。</p>
+<p>最终我试着在Kotlin里进行相同的实现：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">func</span><span class="params">(intArray: <span class="type">IntArray</span>)</span></span>: <span class="built_in">Int</span> =</span><br><span class="line">    intArray.asSequence()</span><br><span class="line">        .groupingBy &#123; it &#125;</span><br><span class="line">        .eachCount()</span><br><span class="line">        .maxByOrNull &#123; it.value &#125;!!.key</span><br></pre></td></tr></table></figure>
+<p>没什么好说的，是个人都看得明白这份对比。以及写Kotlin代码过程中，我没有查阅文档，靠对方法名的直觉性猜测和IDE的提示帮助下就完成了。</p>
+<p>顺便一提，Kotlin的<code>Sequence</code>和Lambda表达式实现<strong>都早于</strong>Java的<code>Stream</code>和Lambda表达式，在其他语言中还有更早的。</p>
+<p>最终的最终，我突然意识到这就是在求取统计意义上的众数，因此又有了依赖第三方类库JOOL的版本：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JOOL版</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">func3</span><span class="params">(<span class="keyword">int</span>[] intArray)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Seq.seq(Arrays.stream(intArray)).mode().orElseThrow();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JOOL是一个基于<code>Stream</code>的函数式编程增强类库，根据更传统的函数式编程实现做了一些改进补全。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>从整个过程可以得出这些结论：</p>
+<ol>
+<li>我最初并没有意识题目中的陷阱，甚至也没有发现原做题者的实现中的漏洞，但在函数式编程的“强制”下我无意地被导向了正确恰当的思路。某种程度上这确实非常神奇。</li>
+<li>Java的<code>Stream</code> API设计得难以恭维，设计者似乎是想对传统函数式编程中某些比较特化的方法进行“提炼归类”，从而诞生了<code>Collector</code>与其工具类<code>Collectors</code>还有<code>Comparator</code>，为了搞懂它们怎么使用，我花在官方文档和查找阅读示例代码上时间不少（包括在本次实践之前）。</li>
+<li>Java的泛型系统和基本类型包装器的配合再次令人感到非常不舒服，至今缺乏轻量级的真正的值类型是Java的一大痛点（Valhalla项目还在天上飘着呢）。在Kotlin处理同样问题时，也不涉及对JVM的修改，而包装器的实现却更智能一些，<a href="https://kotlinlang.org/docs/reference/basic-types.html#representation" target="_blank" rel="noopener">基本类型包装器除非涉及可空值或泛型，否则绝对不会发生装拆箱，而是作为真正的基本类型处理</a>。</li>
+<li>为了更愉快地在Java进行函数式编程，考虑使用JOOL。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -238,7 +328,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-06 11:32:45" itemprop="dateModified" datetime="2020-12-06T11:32:45+08:00">2020-12-06</time>
+                <time title="修改时间：2021-01-02 18:40:41" itemprop="dateModified" datetime="2021-01-02T18:40:41+08:00">2021-01-02</time>
               </span>
 
           
@@ -252,11 +342,6 @@
     <div class="post-body" itemprop="articleBody">
           <p>了解JVM底层，尤其是方法调用如何被执行，有什么用？</p>
 <p>一切还得从Lambda表达式说起，最终我们将发现一系列看似无关事物如何串联，并实在地收获好处。</p>
-<p>主要参考资料：</p>
-<ul>
-<li>《深入理解Java虚拟机 JVM高级特性与最佳实践》</li>
-<li><a href="https://medium.com/@jpwang/deep-dive-into-java-lambda-0x02-a7cf51e1f0ed" target="_blank" rel="noopener">Deep dive into Java Lambda(0x02)</a></li>
-</ul>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/12/05/Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%8Cinvokedynamic%E6%8C%87%E4%BB%A4%E5%92%8CMethodHandle-API%EF%BC%88%E4%B8%80%EF%BC%89/#more" rel="contents">
@@ -882,79 +967,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="IlluminatedWorm">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="IlluminatedWorm's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/" class="post-title-link" itemprop="url">CGLib之Enhancer小试</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-09-13 16:07:03" itemprop="dateCreated datePublished" datetime="2020-09-13T16:07:03+08:00">2020-09-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-04 20:29:36" itemprop="dateModified" datetime="2020-12-04T20:29:36+08:00">2020-12-04</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>参考资料：<a href="https://dzone.com/articles/cglib-missing-manual" target="_blank" rel="noopener">CGLib: The Missing Menual</a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/09/13/CGLib%E4%B9%8BEnhancer%E5%B0%8F%E8%AF%95/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -999,7 +1011,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2020</span>
+  <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
